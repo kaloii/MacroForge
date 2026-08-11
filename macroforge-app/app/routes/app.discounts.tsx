@@ -5,105 +5,146 @@ import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const { admin } = await authenticate.admin(request);
+  try {
+    const { admin } = await authenticate.admin(request);
 
-  const response = await admin.graphql(`
-    #graphql
-    query GetShopifyFunction {
-      shopifyFunctions(first: 10) {
-        nodes {
-          id
-          app {
-            title
-          }
-          apiClient {
+    const response = await admin.graphql(`
+      #graphql
+      query GetShopifyData {
+        shopifyFunctions(first: 10) {
+          nodes {
+            id
             title
           }
         }
+        automaticDiscountNodes(first: 20) {
+          nodes {
+            id
+            automaticDiscount {
+              ... on DiscountAutomaticApp {
+                title
+                status
+              }
+            }
+          }
+        }
       }
-    }
-  `);
-  
-  const responseJson = await response.json();
-  const functions = responseJson.data?.shopifyFunctions?.nodes || [];
-  
-  const targetFunction = functions.find((fn: any) => 
-    fn.apiClient?.title?.toLowerCase().includes("forge-stack-discount") ||
-    fn.id
-  );
+    `);
+    
+    const responseJson = await response.json();
+    const functions = responseJson.data?.shopifyFunctions?.nodes || [];
+    const discountNodes = responseJson.data?.automaticDiscountNodes?.nodes || [];
+    
+    const targetFunction = functions.find((fn: any) => 
+      fn.title?.toLowerCase().includes("forge") ||
+      fn.title?.toLowerCase().includes("discount") ||
+      functions.length === 1
+    ) || functions[0];
 
-  return Response.json({ functionId: targetFunction?.id || null });
+    // Check if the discount is already active on the store
+    const activeDiscount = discountNodes.find((node: any) => 
+      node.automaticDiscount?.title === "Forge Stack Bundle Discount" &&
+      node.automaticDiscount?.status === "ACTIVE"
+    );
+
+    return { 
+      functionId: targetFunction?.id || null, 
+      isDiscountActive: !!activeDiscount,
+      error: null 
+    };
+  } catch (error: any) {
+    console.error("Failed to load Shopify functions/discounts:", error);
+    return { functionId: null, isDiscountActive: false, error: error.message || "Unknown error occurred in loader." };
+  }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { admin: shopifyAdmin } = await authenticate.admin(request);
-  const formData = await request.formData();
-  const functionId = formData.get("functionId") as string;
+  try {
+    const { admin: shopifyAdmin } = await authenticate.admin(request);
+    const formData = await request.formData();
+    const functionId = formData.get("functionId") as string;
 
-  if (!functionId) {
-    return Response.json({ success: false, error: "Function ID not found." });
-  }
+    if (!functionId) {
+      return { success: false, error: "Function ID not found. Ensure your extension is deployed." };
+    }
 
-  const response = await shopifyAdmin.graphql(`
-    #graphql
-    mutation CreateAutomaticDiscount($automaticAppDiscount: DiscountAutomaticAppInput!) {
-      discountAutomaticAppCreate(automaticAppDiscount: $automaticAppDiscount) {
-        automaticAppDiscount {
-          discountId
-          title
-        }
-        userErrors {
-          field
-          message
+    const response = await shopifyAdmin.graphql(`
+      #graphql
+      mutation CreateAutomaticDiscount($automaticAppDiscount: DiscountAutomaticAppInput!) {
+        discountAutomaticAppCreate(automaticAppDiscount: $automaticAppDiscount) {
+          automaticAppDiscount {
+            discountId
+            title
+          }
+          userErrors {
+            field
+            message
+          }
         }
       }
-    }
-  `, {
-    variables: {
-      automaticAppDiscount: {
-        title: "Forge Stack Bundle Discount",
-        startsAt: new Date().toISOString(),
-        functionId: functionId,
-        combinesWith: {
-          orderDiscounts: true,
-          productDiscounts: true,
-          shippingDiscounts: true
+    `, {
+      variables: {
+        automaticAppDiscount: {
+          title: "Forge Stack Bundle Discount",
+          startsAt: new Date().toISOString(),
+          functionId: functionId,
+          discountClasses: ["PRODUCT"],
+          combinesWith: {
+            orderDiscounts: true,
+            productDiscounts: true,
+            shippingDiscounts: true
+          }
         }
       }
+    });
+
+    const responseJson = await response.json();
+    const userErrors = responseJson.data?.discountAutomaticAppCreate?.userErrors;
+
+    if (userErrors && userErrors.length > 0) {
+      return { success: false, error: userErrors[0].message };
     }
-  });
 
-  const responseJson = await response.json();
-  const userErrors = responseJson.data?.discountAutomaticAppCreate?.userErrors;
-
-  if (userErrors && userErrors.length > 0) {
-    return Response.json({ success: false, error: userErrors[0].message });
+    return { 
+      success: true, 
+      discount: responseJson.data?.discountAutomaticAppCreate?.automaticAppDiscount 
+    };
+  } catch (error: any) {
+    console.error("Failed to create discount mutation:", error);
+    return { success: false, error: error.message || "Server exception during mutation." };
   }
-
-  return Response.json({ 
-    success: true, 
-    discount: responseJson.data?.discountAutomaticAppCreate?.automaticAppDiscount 
-  });
 }
 
 export default function DiscountManager() {
-  const { functionId } = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
+
+  const functionId = data?.functionId;
+  const isDiscountActive = data?.isDiscountActive;
+  const loaderError = data?.error;
 
   const isCreating = fetcher.state === "submitting";
   const actionData = fetcher.data as { success?: boolean; error?: string; discount?: any } | undefined;
 
+  // Reflect active state immediately if the mutation succeeds during this session
+  const discountActiveState = isDiscountActive || actionData?.success;
+
   return (
     <Page title="Forge Stack Bundle Management" subtitle="Automate your bundle pricing rules">
       <BlockStack gap="500">
-        {actionData?.success && (
+        {loaderError && (
+          <Banner tone="critical">
+            Loader Error: {loaderError}
+          </Banner>
+        )}
+        {discountActiveState && (
           <Banner tone="success">
-            Automatic bundle discount successfully created and activated!
+            Automatic bundle discount is active and running on your store!
           </Banner>
         )}
         {actionData?.error && (
           <Banner tone="critical">
-            Error: {actionData.error}
+            Mutation Error: {actionData.error}
           </Banner>
         )}
 
@@ -113,13 +154,18 @@ export default function DiscountManager() {
             <Text variant="bodyMd" as="p">
               {functionId 
                 ? `Connected Function ID: ${functionId}` 
-                : "Warning: Function 'forge-stack-discount' not detected. Make sure you deployed with 'shopify app deploy'."}
+                : "Warning: Function was not found on this store. Ensure you have run a production deployment via the CLI."}
             </Text>
 
             <fetcher.Form method="post">
               <input type="hidden" name="functionId" value={functionId || ""} />
-              <Button submit variant="primary" disabled={!functionId || isCreating} loading={isCreating}>
-                Activate Automatic Bundle Discount
+              <Button 
+                submit 
+                variant={discountActiveState ? "plain" : "primary"} 
+                disabled={!functionId || isCreating || discountActiveState} 
+                loading={isCreating}
+              >
+                {discountActiveState ? "Discount Already Active" : "Activate Automatic Bundle Discount"}
               </Button>
             </fetcher.Form>
           </BlockStack>

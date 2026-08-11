@@ -26,13 +26,13 @@
               <div class="mf-cart-item-qty">
                 {% if item.properties._stack_role != blank %}
                   <span class="mf-locked-qty">1</span>
-                  <!-- Positionally indexed update for locked stack items -->
-                  <input type="hidden" name="updates[{{ forloop.index0 }}]" value="1">
+                  <!-- Line-item-key based update for locked stack items -->
+                  <input type="hidden" name="updates[{{ item.key }}]" value="1">
                 {% else %}
-                  <!-- Positionally indexed update for regular items -->
+                  <!-- Line-item-key based update for regular items -->
                   <input 
                     type="number" 
-                    name="updates[{{ forloop.index0 }}]" 
+                    name="updates[{{ item.key }}]" 
                     value="{{ item.quantity }}" 
                     min="1" 
                     max="{% if item.variant.inventory_management != blank %}{{ item.variant.inventory_quantity }}{% else %}9999{% endif %}" 
@@ -115,8 +115,11 @@
 
       document.querySelectorAll('.mf-cart-item').forEach(row => {
         const qtyInput = row.querySelector('.mf-qty-input');
+        const lockedQtySpan = row.querySelector('.mf-locked-qty');
         const linePriceDisplay = row.querySelector('.mf-line-price-display');
         
+        let itemLineTotal = 0;
+
         if (qtyInput) {
           const price = parseFloat(qtyInput.dataset.price) || 0;
           let qty = parseInt(qtyInput.value) || 0;
@@ -126,17 +129,22 @@
             qty = max;
             qtyInput.value = max;
           }
-          if (qty < 0) {
-            qty = 0;
-            qtyInput.value = 0;
+          if (qty < 1) {
+            qty = 1;
+            qtyInput.value = 1;
           }
 
-          const lineTotal = price * qty;
-          if (linePriceDisplay) {
-            linePriceDisplay.textContent = formatMoney(lineTotal);
-          }
-          calculatedSubtotal += lineTotal;
+          itemLineTotal = price * qty;
+        } else if (lockedQtySpan) {
+          const detailsDiv = row.querySelector('.mf-cart-item-details');
+          const price = parseFloat(detailsDiv.dataset.unitPrice) || 0;
+          itemLineTotal = price;
         }
+
+        if (linePriceDisplay && (qtyInput || lockedQtySpan)) {
+          linePriceDisplay.textContent = formatMoney(itemLineTotal);
+        }
+        calculatedSubtotal += itemLineTotal;
       });
 
       if (subtotalEl) {
@@ -204,7 +212,7 @@
                 qtyContainer.innerHTML = `
                   <input 
                     type="number" 
-                    name="updates[${item.index}]" 
+                    name="updates[${item.key}]" 
                     value="${item.quantity}" 
                     min="1" 
                     max="9999" 
