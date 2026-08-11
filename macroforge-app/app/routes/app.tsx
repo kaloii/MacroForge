@@ -33,6 +33,7 @@ export default function App() {
 
   const tabs = [
     { path: "/app", label: "Home" },
+    { path: "/app/discounts", label: "Forge Stack Discount" },
     { path: "/app/rules", label: "Recommendation Rules" },
     { path: "/app/batches", label: "Food Batch Management" },
     { path: "/app/batch-losses", label: "Food Batch Losses" },
