@@ -1,0 +1,226 @@
+<header class="mf-main-header">
+  <h2 class="header__title">
+    <a href="{{ routes.root_url }}">
+       {% if section.settings.image != blank %}
+    <img src="{{ section.settings.image | image_url: width: 1800 }}" alt="{{ section.settings.heading }}" width="{{ section.settings.image.width }}" 
+     height="{{ section.settings.image.height }}" class="mf-logo-img" loading="lazy">
+     {% else %}
+     <span class="mf-logo-desktop">{{ shop.name }}</span>
+  {% endif %}
+      
+    </a>
+  </h2>
+
+  {% assign menu_handle = section.settings.menu | default: 'main-menu' %}
+  {% assign header_menu = linklists[menu_handle] %}
+
+  <nav class="header__menu" role="navigation">
+    {% if header_menu.links.size > 0 %}
+      {% for link in header_menu.links %}
+        <a href="{{ link.url }}" class="mf-nav-link {% if link.active or link.child_active %}is-active{% endif %}">
+          {{ link.title }}
+        </a>
+      {% endfor %}
+    {% else %}
+      <a href="{{ routes.root_url }}" class="mf-nav-link">Home</a>
+      <a href="{{ routes.all_products_collection_url }}" class="mf-nav-link">Shop All</a>
+      <a href="{{ routes.collections_url }}" class="mf-nav-link">Collections</a>
+    {% endif %}
+  </nav>
+
+  <div class="header__icons">
+    {% if shop.customer_accounts_enabled %}
+      <shopify-account menu="{{ section.settings.customer_account_menu }}">
+        {{ 'icon-account.svg' | inline_asset_content }}
+      </shopify-account>
+    {% endif %}
+
+    <a href="{{ routes.cart_url }}" class="mf-cart-icon" aria-label="Shopping Cart">
+      {{ 'icon-cart.svg' | inline_asset_content }}
+      {% if cart.item_count > 0 %}
+        <sup class="mf-cart-badge">{{ cart.item_count }}</sup>
+      {% endif %}
+    </a>
+  </div>
+</header>
+
+{% stylesheet %}
+  .mf-main-header {
+    height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #310A31;
+    border-bottom: 1px solid #847996;
+    padding: 0 2rem;
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .mf-main-header .mf-logo-img {
+    height: 40px;
+  max-height: 100%;
+    width: auto;
+  max-width: 180px;
+  object-fit: contain;
+  display: block;
+  }
+
+  .mf-main-header .header__title {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    display: none;
+  }
+
+  .mf-main-header .header__title a {
+    color: #FDF0D5;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .mf-main-header .header__title a:hover {
+    color: #F15BB5;
+  }
+
+  .mf-main-header .header__menu {
+    display: flex;
+    align-items: center;
+    gap: 1.8rem;
+  }
+
+  .mf-main-header .mf-nav-link {
+    position: relative;
+    text-decoration: none;
+    color: #847996;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.5rem 0;
+    transition: color 0.2s ease;
+  }
+
+  .mf-main-header .mf-nav-link:hover,
+  .mf-main-header .mf-nav-link.is-active {
+    color: #F15BB5;
+  }
+
+  .mf-main-header .mf-nav-link.is-active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #F15BB5;
+    box-shadow: 0 0 8px #F15BB5;
+  }
+
+  .mf-main-header .header__icons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .mf-main-header .header__icons a,
+  .mf-main-header shopify-account {
+    position: relative;
+    text-decoration: none;
+    color: #FDF0D5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+
+  .mf-main-header .header__icons a:hover,
+  .mf-main-header shopify-account:hover {
+    color: #F15BB5;
+    transform: translateY(-1px);
+  }
+
+  .mf-main-header .header__icons a svg,
+  .mf-main-header shopify-account svg {
+    width: 1.6rem;
+    height: 1.6rem;
+    fill: currentColor;
+    stroke: currentColor;
+    flex-shrink: 0;
+    display: block !important;
+  }
+
+  .mf-main-header .mf-cart-badge {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    background-color: #F15BB5;
+    color: #310A31;
+    font-size: 0.7rem;
+    font-weight: 800;
+    border-radius: 50%;
+    width: 17px;
+    height: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    box-shadow: 0 0 6px rgba(241, 91, 181, 0.6);
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .mf-main-header {
+      padding: 0 1rem;
+      height: 4.5rem;
+    }
+    
+    .mf-main-header .header__menu {
+      gap: 1rem;
+    }
+    
+    .mf-main-header .mf-nav-link {
+      font-size: 0.85rem;
+    }
+  }
+
+  /* Show logo on desktop viewports (768px and up) */
+  @media (min-width: 768px) {
+    .mf-main-header .header__title {
+      display: block;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.header",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Shop Logo"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "t:labels.menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "link_list",
+      "id": "customer_account_menu",
+      "label": "t:labels.customer_account_menu",
+      "default": "customer-account-main-menu"
+    }
+  ]
+}
+{% endschema %}

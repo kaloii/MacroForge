@@ -1,0 +1,703 @@
+{% comment %}
+  MACROFORGE Secondary Header - Responsive Off-Canvas Drawer for Mobile Layouts
+{% endcomment %}
+
+{% assign active_filter_count = 0 %}
+{% if collection %}
+  {% for filter in collection.filters %}
+    {% assign active_filter_count = active_filter_count | plus: filter.active_values.size %}
+    {% if filter.type == 'price_range' %}
+      {% if filter.min_value.value != nil or filter.max_value.value != nil %}
+        {% assign active_filter_count = active_filter_count | plus: 1 %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+<div class="mf-secondary-header" id="MFHeaderFiltersContainer">
+  <div class="mf-sec-container">
+    
+    <!-- Left: Search Bar -->
+    <div class="mf-sec-left">
+      <form action="{{ routes.search_url }}" method="get" role="search" class="mf-sec-search">
+        <input 
+          type="search" 
+          name="q" 
+          placeholder="SEARCH..." 
+          value="{{ search.terms | escape }}" 
+          class="mf-sec-search-input"
+          autocomplete="off"
+          aria-label="Search Store"
+        >
+        <button type="submit" class="mf-sec-search-btn" aria-label="Submit Search">
+          <svg viewBox="0 0 24 24" class="mf-icon"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Right: Desktop Inline Controls -->
+    <div class="mf-sec-right mf-desktop-only">
+      <div class="mf-dynamic-filters">
+        <!-- Collection Dropdown -->
+        <div class="mf-filter-group">
+          <label for="Filter-Collection-Desktop" class="mf-filter-label">COLLECTION:</label>
+          <select id="Filter-Collection-Desktop" class="mf-filter-select" data-ajax-select>
+            <option value="{{ routes.all_products_collection_url }}" {% if collection.handle == 'all' %}selected{% endif %}>
+              ALL PRODUCTS
+            </option>
+            {% for col in collections %}
+              <option value="{{ col.url }}" {% if collection.handle == col.handle %}selected{% endif %}>
+                {{ col.title | upcase }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Storefront Attribute Filters -->
+        {% if collection and collection.filters.size > 0 %}
+          {% for filter in collection.filters limit: 2 %}
+            <div class="mf-filter-group">
+              <label for="Filter-{{ filter.label | handle }}-Desktop" class="mf-filter-label">{{ filter.label | upcase }}:</label>
+              <select id="Filter-{{ filter.label | handle }}-Desktop" class="mf-filter-select" data-ajax-select>
+                <option value="{{ collection.url }}">ALL</option>
+                {% for value in filter.values %}
+                  <option 
+                    value="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}"
+                    {% if value.active %}selected{% endif %}
+                  >
+                    {{ value.label | upcase }} ({{ value.count }})
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right: Mobile Trigger Button -->
+    <div class="mf-sec-right mf-mobile-only">
+      <button type="button" class="mf-mobile-filter-btn" data-drawer-open aria-label="Open filter sidebar">
+        <svg viewBox="0 0 24 24" class="mf-icon"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
+        <span>FILTERS</span>
+        {% if active_filter_count > 0 %}
+          <span class="mf-filter-badge">{{ active_filter_count }}</span>
+        {% endif %}
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Desktop Active Filter Tags Row -->
+  {% if active_filter_count > 0 %}
+    <div class="mf-active-filters-bar mf-desktop-only">
+      <div class="mf-active-tags-wrapper">
+        <span class="mf-active-label">ACTIVE:</span>
+        
+        {% for filter in collection.filters %}
+          {% for value in filter.active_values %}
+            <a href="{{ value.url_to_remove }}" class="mf-active-tag" data-ajax-link aria-label="Remove filter {{ filter.label }}: {{ value.label }}">
+              <span class="mf-tag-text">{{ filter.label | upcase }}: <strong>{{ value.label | upcase }}</strong></span>
+              <span class="mf-remove-x" aria-hidden="true">&times;</span>
+            </a>
+          {% endfor %}
+
+          {% if filter.type == 'price_range' %}
+            {% if filter.min_value.value != nil or filter.max_value.value != nil %}
+              <a href="{{ filter.url_to_remove }}" class="mf-active-tag" data-ajax-link aria-label="Remove price filter">
+                <span class="mf-tag-text">
+                  PRICE: 
+                  <strong>
+                    {% if filter.min_value.value %}{{ filter.min_value.value | money_without_trailing_zeros }}{% else %}$0{% endif %} 
+                    - 
+                    {% if filter.max_value.value %}{{ filter.max_value.value | money_without_trailing_zeros }}{% else %}MAX{% endif %}
+                  </strong>
+                </span>
+                <span class="mf-remove-x" aria-hidden="true">&times;</span>
+              </a>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        <a href="{{ collection.url }}" class="mf-clear-all-btn" data-ajax-link>CLEAR ALL</a>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Mobile Off-Canvas Sidebar Drawer -->
+  <div class="mf-drawer-backdrop" data-drawer-close></div>
+  <aside class="mf-drawer-panel" id="MFFilterDrawer" aria-label="Filters Sidebar">
+    <div class="mf-drawer-header">
+      <h3 class="mf-drawer-title">FILTER PRODUCTS</h3>
+      <button type="button" class="mf-drawer-close-btn" data-drawer-close aria-label="Close sidebar">&times;</button>
+    </div>
+
+    <div class="mf-drawer-body">
+      <!-- Collection Selector -->
+      <div class="mf-drawer-section">
+        <label for="Filter-Collection-Mobile" class="mf-drawer-label">COLLECTION</label>
+        <select id="Filter-Collection-Mobile" class="mf-filter-select mf-full-width" data-ajax-select>
+          <option value="{{ routes.all_products_collection_url }}" {% if collection.handle == 'all' %}selected{% endif %}>
+            ALL PRODUCTS
+          </option>
+          {% for col in collections %}
+            <option value="{{ col.url }}" {% if collection.handle == col.handle %}selected{% endif %}>
+              {{ col.title | upcase }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Storefront Dynamic Filters -->
+      {% if collection and collection.filters.size > 0 %}
+        {% for filter in collection.filters %}
+          <div class="mf-drawer-section">
+            <label for="Filter-{{ filter.label | handle }}-Mobile" class="mf-drawer-label">{{ filter.label | upcase }}</label>
+            <select id="Filter-{{ filter.label | handle }}-Mobile" class="mf-filter-select mf-full-width" data-ajax-select>
+              <option value="{{ collection.url }}">ALL {{ filter.label | upcase }}</option>
+              {% for value in filter.values %}
+                <option 
+                  value="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}"
+                  {% if value.active %}selected{% endif %}
+                >
+                  {{ value.label | upcase }} ({{ value.count }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Mobile Active Filter Tags -->
+      {% if active_filter_count > 0 %}
+        <div class="mf-drawer-section mf-drawer-active-tags">
+          <span class="mf-drawer-label">ACTIVE FILTERS</span>
+          <div class="mf-active-tags-wrapper">
+            {% for filter in collection.filters %}
+              {% for value in filter.active_values %}
+                <a href="{{ value.url_to_remove }}" class="mf-active-tag" data-ajax-link>
+                  <span>{{ filter.label | upcase }}: <strong>{{ value.label | upcase }}</strong></span>
+                  <span class="mf-remove-x">&times;</span>
+                </a>
+              {% endfor %}
+            {% endfor %}
+          </div>
+          <a href="{{ collection.url }}" class="mf-clear-all-btn" data-ajax-link style="margin-top: 0.75rem; display: inline-block;">CLEAR ALL FILTERS</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="mf-drawer-footer">
+      <button type="button" class="mf-apply-btn" data-drawer-close>VIEW RESULTS</button>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+(function() {
+  const PRODUCT_GRID_SELECTOR = '.mf-product-grid-container'; 
+  const FILTER_HEADER_SELECTOR = '#MFHeaderFiltersContainer';
+
+  // Detect if running inside Shopify Theme Customizer
+  const isThemeEditor = window.Shopify && Shopify.designMode;
+
+  async function fetchFilteredPage(url) {
+    const gridElement = document.querySelector(PRODUCT_GRID_SELECTOR);
+
+    if (isThemeEditor || !gridElement) {
+      window.location.href = url;
+      return;
+    }
+
+    gridElement.classList.add('mf-is-loading');
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP status ${response.status}`);
+      
+      const htmlText = await response.text();
+      const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+
+      const newGrid = doc.querySelector(PRODUCT_GRID_SELECTOR);
+      const currentHeader = document.querySelector(FILTER_HEADER_SELECTOR);
+      const newHeader = doc.querySelector(FILTER_HEADER_SELECTOR);
+
+      if (!newGrid) {
+        window.location.href = url;
+        return;
+      }
+
+      gridElement.innerHTML = newGrid.innerHTML;
+
+      if (currentHeader && newHeader) {
+        currentHeader.innerHTML = newHeader.innerHTML;
+      }
+    } catch (error) {
+      console.error('[Filter Engine] Fetch failed:', error);
+      window.location.href = url;
+    } finally {
+      if (gridElement) gridElement.classList.remove('mf-is-loading');
+    }
+  }
+
+  // --- REAL-TIME CLIENT-SIDE COLLECTION GRID FILTER ---
+  document.addEventListener('input', function(e) {
+    const searchInput = e.target.closest('.mf-sec-search-input');
+    if (!searchInput) return;
+
+    const query = searchInput.value.toLowerCase().trim();
+    const gridElement = document.querySelector(PRODUCT_GRID_SELECTOR);
+    if (!gridElement) return;
+
+    const productCards = gridElement.querySelectorAll('.product-card');
+    let matchCount = 0;
+
+    productCards.forEach(card => {
+      const titleEl = card.querySelector('.product-title');
+      const title = titleEl ? titleEl.textContent.toLowerCase() : card.textContent.toLowerCase();
+
+      if (query === '' || title.includes(query)) {
+        card.style.display = '';
+        matchCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    // Handle empty state message dynamically
+    let emptyMsg = gridElement.querySelector('.mf-search-empty-msg');
+    if (matchCount === 0 && query !== '') {
+      if (!emptyMsg) {
+        emptyMsg = document.createElement('div');
+        emptyMsg.className = 'mf-search-empty-msg';
+        emptyMsg.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 3rem; color: #847996; font-weight: 700; letter-spacing: 1px;';
+        emptyMsg.textContent = `No products found matching "${searchInput.value}"`;
+        gridElement.appendChild(emptyMsg);
+      } else {
+        emptyMsg.textContent = `No products found matching "${searchInput.value}"`;
+        emptyMsg.style.display = '';
+      }
+    } else if (emptyMsg) {
+      emptyMsg.style.display = 'none';
+    }
+  });
+
+  // Prevent form submission redirect
+  document.addEventListener('submit', function(e) {
+    const searchForm = e.target.closest('.mf-sec-search');
+    if (searchForm) {
+      e.preventDefault();
+    }
+  });
+
+  // Dropdown filter changes
+  document.addEventListener('change', function(e) {
+    const select = e.target.closest('[data-ajax-select]');
+    if (select && select.value) {
+      fetchFilteredPage(select.value);
+    }
+  });
+
+  // Tag removal & Clear All links
+  document.addEventListener('click', function(e) {
+    const linkTag = e.target.closest('[data-ajax-link]');
+    if (linkTag) {
+      e.preventDefault();
+      const targetUrl = linkTag.getAttribute('href');
+      if (targetUrl) fetchFilteredPage(targetUrl);
+    }
+  });
+
+  // Handle browser back/forward buttons
+  window.addEventListener('popstate', function() {
+    if (!isThemeEditor) {
+      fetchFilteredPage(window.location.href);
+    }
+  });
+})();
+
+// Mobile drawer open/close
+(function() {
+  function openDrawer() {
+    var drawer = document.querySelector('#MFFilterDrawer');
+    var backdrop = document.querySelector('.mf-drawer-backdrop');
+    if (drawer) drawer.classList.add('mf-drawer-open');
+    if (backdrop) backdrop.classList.add('mf-drawer-open');
+    document.documentElement.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    var drawer = document.querySelector('#MFFilterDrawer');
+    var backdrop = document.querySelector('.mf-drawer-backdrop');
+    if (drawer) drawer.classList.remove('mf-drawer-open');
+    if (backdrop) backdrop.classList.remove('mf-drawer-open');
+    document.documentElement.style.overflow = '';
+  }
+
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('[data-drawer-open]')) {
+      openDrawer();
+      return;
+    }
+    if (e.target.closest('[data-drawer-close]')) {
+      closeDrawer();
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeDrawer();
+  });
+})();
+</script>
+
+{% stylesheet %}
+  .mf-secondary-header {
+    background-color: #1E061E;
+    border-bottom: 1px solid #847996;
+    padding: 0.75rem 2rem;
+    position: relative;
+    z-index: 3000;
+  }
+
+  .mf-sec-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  /* Left: Search Bar */
+  .mf-sec-left {
+    flex: 0 1 360px;
+  }
+
+  .mf-sec-search {
+    position: relative;
+    width: 100%;
+  }
+
+  .mf-sec-search-input {
+    width: 100%;
+    background-color: #310A31;
+    border: 1px solid #847996;
+    border-radius: 4px;
+    padding: 0.55rem 2.5rem 0.55rem 0.85rem;
+    color: #FDF0D5;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .mf-sec-search-input:focus {
+    outline: none;
+    border-color: #F15BB5;
+    box-shadow: 0 0 8px rgba(241, 91, 181, 0.3);
+  }
+
+  .mf-sec-search-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #847996;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Right Controls */
+  .mf-sec-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .mf-dynamic-filters {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .mf-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .mf-filter-label {
+    color: #847996;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+
+  .mf-filter-select {
+    background-color: #310A31;
+    color: #FDF0D5;
+    border: 1px solid #847996;
+    border-radius: 4px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .mf-filter-select:hover,
+  .mf-filter-select:focus {
+    outline: none;
+    border-color: #F15BB5;
+  }
+
+  .mf-full-width {
+    width: 100%;
+    padding: 0.65rem;
+  }
+
+  /* Active Filter Tags Row */
+  .mf-active-filters-bar {
+    max-width: 1400px;
+    margin: 0.75rem auto 0;
+    padding-top: 0.65rem;
+    border-top: 1px dashed rgba(132, 121, 150, 0.4);
+  }
+
+  .mf-active-tags-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .mf-active-label {
+    color: #847996;
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+  }
+
+  .mf-active-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background-color: #310A31;
+    border: 1px solid #F15BB5;
+    border-radius: 3px;
+    padding: 0.25rem 0.5rem;
+    color: #FDF0D5;
+    font-size: 0.7rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .mf-active-tag:hover {
+    background-color: #F15BB5;
+    color: #310A31;
+  }
+
+  .mf-active-tag strong {
+    color: #F15BB5;
+  }
+
+  .mf-active-tag:hover strong {
+    color: #310A31;
+  }
+
+  .mf-clear-all-btn {
+    color: #847996;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-decoration: underline;
+    margin-left: 0.5rem;
+  }
+
+  .mf-clear-all-btn:hover {
+    color: #F15BB5;
+  }
+
+  .mf-icon {
+    width: 1.2rem;
+    height: 1.2rem;
+    fill: currentColor;
+    pointer-events: none;
+  }
+
+  /* Responsive Visibility Toggles */
+  .mf-desktop-only { display: flex; }
+  .mf-mobile-only { display: none; }
+
+  /* Mobile Trigger Button */
+  .mf-mobile-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #310A31;
+    border: 1px solid #847996;
+    color: #FDF0D5;
+    padding: 0.5rem 0.85rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+
+  .mf-filter-badge {
+    background-color: #F15BB5;
+    color: #310A31;
+    font-size: 0.65rem;
+    font-weight: 900;
+    border-radius: 50%;
+    width: 1.1rem;
+    height: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Mobile Drawer Sidebar Styles */
+  .mf-drawer-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 2998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .mf-drawer-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 85vw;
+    max-width: 340px;
+    height: 100vh;
+    background-color: #1E061E;
+    border-left: 1px solid #847996;
+    z-index: 2999;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+  }
+
+  .mf-drawer-backdrop.mf-drawer-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mf-drawer-panel.mf-drawer-open {
+    transform: translateX(0);
+  }
+
+  .mf-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(132, 121, 150, 0.3);
+  }
+
+  .mf-drawer-title {
+    color: #FDF0D5;
+    font-size: 0.9rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    margin: 0;
+  }
+
+  .mf-drawer-close-btn {
+    background: none;
+    border: none;
+    color: #847996;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .mf-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+  }
+
+  .mf-drawer-section {
+    margin-bottom: 1.25rem;
+  }
+
+  .mf-drawer-label {
+    display: block;
+    color: #847996;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 0.4rem;
+  }
+
+  .mf-drawer-footer {
+    padding: 1.25rem;
+    border-top: 1px solid rgba(132, 121, 150, 0.3);
+  }
+
+  .mf-apply-btn {
+    width: 100%;
+    background-color: #F15BB5;
+    color: #310A31;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+
+  /* Grid Loading Overlay */
+  .mf-product-grid-container {
+    transition: opacity 0.25s ease, filter 0.25s ease;
+  }
+
+  .mf-product-grid-container.mf-is-loading {
+    opacity: 0.35;
+    pointer-events: none;
+    filter: blur(2px);
+  }
+
+  @media (max-width: 767px) {
+    .mf-secondary-header {
+      padding: 0.75rem 1rem;
+    }
+
+    .mf-desktop-only { display: none !important; }
+    .mf-mobile-only { display: flex !important; }
+
+    .mf-sec-left {
+      flex: 1;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Secondary Header",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Secondary Header"
+    }
+  ]
+}
+{% endschema %}

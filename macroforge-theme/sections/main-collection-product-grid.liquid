@@ -1,0 +1,217 @@
+<div class="mf-collection-page">
+  <div class="mf-collection-hero">
+    <h1 class="mf-collection-title">{{ collection.title }}</h1>
+    {% if collection.description != blank %}
+      <div class="mf-collection-desc">
+        {{ collection.description }}
+      </div>
+    {% endif %}
+  </div>
+
+  {% paginate collection.products by section.settings.products_per_page %}
+    <div class="mf-product-grid-container">
+      {% if collection.products.size > 0 %}
+        <div class="main-collection-product-grid">
+          {% for product in collection.products %}
+            <div class="product-card">
+              <a href="{{ product.url }}" class="product-link">
+                <div class="product-image-wrapper">
+                  {% if product.featured_image != blank %}
+                    <img src="{{ product.featured_image | image_url: width: 600 }}" 
+                         width="{{ product.featured_image.width }}" 
+                         height="{{ product.featured_image.height }}" 
+                         alt="{{ product.featured_image.alt | default: product.title | escape }}" 
+                         loading="lazy" 
+                         class="product-img">
+                  {% else %}
+                    <div class="no-image">NO IMAGE</div>
+                  {% endif %}
+                </div>
+                
+                <div class="product-info">
+                  <h3 class="product-title">{{ product.title }}</h3>
+                  <div class="product-price">{{ product.price | money }}</div>
+                </div>
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if paginate.pages > 1 %}
+          <div class="mf-pagination">
+            {{ paginate | default_pagination }}
+          </div>
+        {% endif %}
+
+      {% else %}
+        <div class="mf-empty-collection">
+          <p>No products found in this collection.</p>
+        </div>
+      {% endif %}
+    </div>
+  {% endpaginate %}
+</div>
+
+{% stylesheet %}
+  .mf-collection-page {
+    background-color: #310A31;
+    min-height: 80vh;
+    padding: 40px 20px 80px;
+  }
+
+  .mf-collection-hero {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    text-align: center;
+  }
+
+  .mf-collection-title {
+    color: #FDF0D5;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0 0 12px 0;
+  }
+
+  .mf-collection-desc {
+    color: #847996;
+    font-size: 1.1rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .mf-product-grid-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .main-collection-product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 24px;
+  }
+
+  .product-card {
+    background-color: rgba(132, 121, 150, 0.08);
+    border: 1px solid #847996;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .product-card:hover {
+    transform: translateY(-4px);
+    border-color: #F15BB5;
+    box-shadow: 0 0 15px rgba(241, 91, 181, 0.25);
+  }
+
+  .product-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .product-image-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #1e061e;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .product-card:hover .product-img {
+    transform: scale(1.04);
+  }
+
+  .no-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #847996;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+  }
+
+  .product-info {
+    padding: 16px;
+    text-align: left;
+  }
+
+  .product-title {
+    color: #FDF0D5;
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .product-price {
+    color: #F15BB5;
+    font-size: 1.15rem;
+    font-weight: 800;
+  }
+
+  .mf-pagination {
+    margin-top: 40px;
+    text-align: center;
+    color: #FDF0D5;
+  }
+
+  .mf-pagination a, 
+  .mf-pagination span {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 0 4px;
+    border: 1px solid #847996;
+    color: #FDF0D5;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  .mf-pagination .current {
+    background-color: #F15BB5;
+    color: #310A31;
+    border-color: #F15BB5;
+    font-weight: 900;
+  }
+
+  .mf-empty-collection {
+    text-align: center;
+    color: #847996;
+    padding: 60px 0;
+    font-size: 1.2rem;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Collection Grid",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 8,
+      "max": 36,
+      "step": 4,
+      "default": 12,
+      "label": "Products per page"
+    }
+  ]
+}
+{% endschema %}

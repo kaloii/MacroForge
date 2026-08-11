@@ -1,0 +1,115 @@
+:root {
+  --mf-bg-dark: #310A31;        /* Main deep background */
+  --mf-border-subtle: #847996;  /* Foreground color for borders & muted text */
+  --mf-text-light: #FDF0D5;     /* High-contrast body text for readability */
+  --mf-accent-magenta: #F15BB5; /* High-energy accent for buttons & highlights */
+  --mf-bg-scrollbar: #340434ff; /* Scrollbar BG */
+  --mf-scrollbar-thumb: #ffffffff;
+}
+
+/* 1. Base Storefront Background & Body Text */
+body, 
+.gradient,
+.page-width,
+.main-content {
+  background-color: var(--mf-bg-dark) !important;
+  color: var(--mf-text-light) !important;
+}
+
+/* 2. Headings & Typography */
+h1, h2, h3, h4, h5, h6, 
+.h1, .h2, .h3, .h4, 
+.card__heading, 
+.title {
+  color: var(--mf-text-light) !important;
+}
+
+/* 3. Subtle Elements & Borders (Using #847996 foreground) */
+p.caption, 
+.subtext, 
+.field__label,
+.quantity__input {
+  color: var(--mf-border-subtle) !important;
+}
+
+hr, 
+.card, 
+.header-wrapper, 
+.footer, 
+.field__input, 
+select {
+  border-color: var(--mf-border-subtle) !important;
+}
+
+/* 4. Action Buttons & Links (Using Neon Magenta Accent) */
+.button, 
+.button--primary, 
+.mf-btn-primary,
+button[type="submit"] {
+  background-color: var(--mf-accent-magenta) !important;
+  color: #310A31 !important; /* Dark text on bright button for high contrast */
+  border: none !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.button:hover, 
+.button--primary:hover {
+  opacity: 0.9;
+  box-shadow: 0 0 12px rgba(241, 91, 181, 0.6);
+}
+
+a {
+  color: var(--mf-accent-magenta);
+}
+
+/* Custom WebKit Scrollbar with Integrated Arrow Buttons */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--mf-bg-scrollbar);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--mf-scrollbar-thumb);
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--mf-accent-magenta);
+}
+
+/* Scrollbar Button Base Setup */
+::-webkit-scrollbar-button:single-button {
+  display: block;
+  background-color: var(--mf-bg-scrollbar);
+  background-size: 8px;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 16px;
+}
+
+/* Top Scrollbar Arrow (Decrement) */
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FDF0D5'><path d='M7 14l5-5 5 5z'/></svg>");
+}
+
+/* Bottom Scrollbar Arrow (Increment) */
+::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FDF0D5'><path d='M7 10l5 5 5-5z'/></svg>");
+}
+
+/* Interactive Hover States for Arrows */
+::-webkit-scrollbar-button:single-button:vertical:decrement:hover {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23F15BB5'><path d='M7 14l5-5 5 5z'/></svg>");
+  background-color: var(--mf-bg-dark);
+}
+
+::-webkit-scrollbar-button:single-button:vertical:increment:hover {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23F15BB5'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-color: var(--mf-bg-dark);
+}

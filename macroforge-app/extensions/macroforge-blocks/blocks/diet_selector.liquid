@@ -1,0 +1,191 @@
+
+  <div class="macroforge-widget">
+    <label for="diet-select-{{ block.id }}">
+      {{ block.settings.widget_title | escape }}
+    </label>
+    
+    <select id="diet-select-{{ block.id }}">
+      <option value="keto">Keto</option>
+      <option value="high-protein">High Protein</option>
+      <option value="carnivore">Carnivore</option>
+      <option value="omnivore">Omnivore</option>
+    </select>
+    
+    <div id="macroforge-results-{{ block.id }}" class="mf-results-container">
+      <!-- Recommendations load here dynamically -->
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const selectElement = document.getElementById("diet-select-{{ block.id }}");
+      const resultsContainer = document.getElementById("macroforge-results-{{ block.id }}");
+      const shopDomain = "{{ shop.permanent_domain }}";
+      const appUrl = "https://wildlife-informed-requirement-present.trycloudflare.com"; 
+
+      const fetchRecommendations = async (diet) => {
+        resultsContainer.innerHTML = `<p class="mf-subtext">Finding best matches...</p>`;
+        try {
+          const response = await fetch(`${appUrl}/api/recommendations?shop=${shopDomain}&diet=${diet}`);
+          const data = await response.json();
+          
+          if (data.success && data.products.length > 0) {
+            let html = `<p class="mf-subtext">Active Rule: <strong>${data.activeRule}</strong></p>`;
+            html += `<ul style="list-style: none; padding: 0; margin: 0; display: grid; gap: 10px;">`;
+            
+            // Limit to the top 5 recommendations
+            data.products.slice(0, 5).forEach(prod => {
+              const productUrl = `/products/${prod.handle}`;
+              const scoreValue = prod.score !== undefined ? Math.round(prod.score) : null;
+              
+              html += `
+                <li>
+                  <a href="${productUrl}" class="mf-product-item">
+                    <div class="mf-product-info" style="width: 100%;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                        <span class="mf-product-title">${prod.title}</span>
+                        ${scoreValue !== null ? `<span class="mf-badge score">Score: ${scoreValue}</span>` : ''}
+                      </div>
+                      <div class="mf-macros">
+                        <span class="mf-badge protein">P: ${prod.proteinGrams}g</span>
+                        <span class="mf-badge carbs">C: ${prod.carbGrams}g</span>
+                        <span class="mf-badge fat">F: ${prod.fatGrams}g</span>
+                      </div>
+                    </div>
+                  </a>
+                </li>`;
+            });
+            
+            html += `</ul>`;
+            resultsContainer.innerHTML = html;
+          } else {
+            resultsContainer.innerHTML = `<p class="mf-subtext">No recommendations available.</p>`;
+          }
+        } catch (err) {
+          resultsContainer.innerHTML = `<p style="color: #F15BB5; font-size: 13px;">Failed to load recommendations.</p>`;
+        }
+      };
+
+      const savedDiet = localStorage.getItem("macroforge_preferred_diet") || "keto";
+      selectElement.value = savedDiet;
+      fetchRecommendations(savedDiet);
+
+      selectElement.addEventListener("change", (e) => {
+        const newDiet = e.target.value;
+        localStorage.setItem("macroforge_preferred_diet", newDiet);
+        fetchRecommendations(newDiet);
+      });
+    });
+  </script>
+
+
+<style>
+  .macroforge-widget {
+    background-color: #310A31;
+    color: #FDF0D5;
+    border: 1px solid #847996;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .macroforge-widget label {
+    color: #FDF0D5;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  .macroforge-widget select {
+    background-color: #310A31;
+    color: #FDF0D5;
+    border: 1px solid #847996;
+    border-radius: 4px;
+    padding: 10px;
+    width: 100%;
+    font-size: 14px;
+  }
+  .macroforge-widget select option {
+    background-color: #310A31;
+    color: #FDF0D5;
+  }
+  .macroforge-widget .mf-results-container {
+    margin-top: 16px;
+  }
+  .macroforge-widget .mf-subtext {
+    color: #847996;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .macroforge-widget .mf-product-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: rgba(132, 121, 150, 0.1);
+    border: 1px solid #847996;
+    border-radius: 6px;
+    padding: 10px;
+    text-decoration: none;
+    color: #FDF0D5;
+    transition: background-color 0.2s ease;
+  }
+  .macroforge-widget .mf-product-item:hover {
+    background-color: rgba(132, 121, 150, 0.2);
+  }
+  .macroforge-widget .mf-product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+  }
+  .macroforge-widget .mf-product-title {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #FDF0D5;
+  }
+  .macroforge-widget .mf-macros {
+    display: flex;
+    gap: 6px;
+    font-size: 11px;
+  }
+  .macroforge-widget .mf-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 10px;
+  }
+  .macroforge-widget .mf-badge.protein {
+    background-color: rgba(241, 91, 181, 0.2);
+    color: #F15BB5;
+  }
+  .macroforge-widget .mf-badge.carbs {
+    background-color: rgba(132, 121, 150, 0.2);
+    color: #FDF0D5;
+  }
+  .macroforge-widget .mf-badge.fat {
+    background-color: rgba(253, 240, 213, 0.2);
+    color: #FDF0D5;
+  }
+  .macroforge-widget .mf-badge.score {
+    background-color: rgba(255, 215, 0, 0.2);
+    color: #FFD700;
+    flex-shrink: 0;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Macro Goal Selector",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "widget_title",
+      "label": "Widget Title",
+      "default": "Choose Your Dietary Goal"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,1 @@
+ALTER TABLE `batch_waitlists` ADD `date_fulfilled` timestamp;

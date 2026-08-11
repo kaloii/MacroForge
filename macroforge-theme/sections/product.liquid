@@ -1,0 +1,129 @@
+<div class="mf-product-page">
+  <div class="mf-product-container">
+    <div class="mf-product-media">
+      {% if product.featured_image != blank %}
+        <img src="{{ product.featured_image | image_url: width: 800 }}" 
+             alt="{{ product.title | escape }}" 
+             width="800" height="800" class="mf-main-image">
+      {% else %}
+        <div class="mf-media-placeholder">NO IMAGE AVAILABLE</div>
+      {% endif %}
+    </div>
+
+    <div class="mf-product-details">
+      <h1 class="mf-product-title">{{ product.title }}</h1>
+      <div class="mf-product-price">{{ product.selected_or_first_available_variant.price | money }}</div>
+      
+      {% form 'product', product %}
+        <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+        
+        <div class="mf-quantity-group">
+          <label for="Quantity">Quantity</label>
+          <input type="number" id="Quantity" name="quantity" value="1" min="1" class="mf-qty-input">
+        </div>
+
+        <button type="submit" name="add" class="mf-add-to-cart-btn" 
+                {% unless product.available %}disabled{% endunless %}>
+          {% if product.available %}ADD TO CART{% else %}SOLD OUT{% endif %}
+        </button>
+      {% endform %}
+
+      <div class="mf-product-description">
+                {% if product.metafields.custom.protein.value != blank %}
+  <div class="mf-macro-row">
+    <div class="mf-macro-item">
+      <span class="mf-macro-label">Cal</span>
+      <span class="mf-macro-value">{{ product.metafields.custom.calories.value | default: '—' }}</span>
+    </div>
+    <div class="mf-macro-item">
+      <span class="mf-macro-label">Protein</span>
+      <span class="mf-macro-value">{{ product.metafields.custom.protein.value | default: '0' }}g</span>
+    </div>
+    <div class="mf-macro-item">
+      <span class="mf-macro-label">Carbs</span>
+      <span class="mf-macro-value">{{ product.metafields.custom.carbs.value | default: '0' }}g</span>
+    </div>
+    <div class="mf-macro-item">
+      <span class="mf-macro-label">Fat</span>
+      <span class="mf-macro-value">{{ product.metafields.custom.fat.value | default: '0' }}g</span>
+    </div>
+  </div>
+{% endif %}
+        <h3>Description</h3>
+        <div>{{ product.description }}</div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .mf-product-page { background: #310A31; min-height: 80vh; padding: 60px 20px; }
+  .mf-product-container { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .mf-product-media { background: #1e061e; border: 1px solid #847996; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1; }
+  .mf-main-image { width: 100%; height: 100%; object-fit: cover; }
+  .mf-media-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; color: #847996; font-weight: 700; }
+  .mf-product-title { color: #FDF0D5; font-size: 2.2rem; font-weight: 900; margin: 0 0 16px; text-transform: uppercase;}
+  .mf-product-price { color: #F15BB5; font-size: 1.8rem; font-weight: 800; margin-bottom: 24px; }
+  .mf-quantity-group { margin-bottom: 24px; }
+  .mf-quantity-group label { display: block; color: #847996; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; font-size: 0.85rem; }
+  .mf-qty-input { background: transparent; border: 2px solid #847996; color: #FDF0D5; padding: 10px; border-radius: 6px; width: 80px; font-weight: 700; text-align: center; }
+  .mf-add-to-cart-btn { width: 100%; background: #F15BB5; color: #310A31; border: none; padding: 16px; font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; border-radius: 6px; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 15px rgba(241, 91, 181, 0.4); }
+  .mf-add-to-cart-btn:hover { background: #e04aa4; transform: translateY(-2px); }
+  .mf-add-to-cart-btn:disabled { background: #847996; color: #310A31; cursor: not-allowed; box-shadow: none; transform: none; }
+  .mf-product-description { margin-top: 40px; border-top: 1px solid #847996; padding-top: 18px; color: #FDF0D5; line-height: 1.6; }
+  .mf-product-description h3 { color: #847996; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; margin-top: 12px; margin-bottom: 12px; }
+  @media (max-width: 768px) { .mf-product-container { grid-template-columns: 1fr; } }
+  .mf-macro-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  border-bottom: 1px solid #847996;
+  padding-bottom: 20px;
+  color: #FDF0D5;
+}
+
+.mf-macro-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  /* Mobile Default: Solid white text */
+  color: #FFFFFF;
+  transition: color 0.2s ease, transform 0.2s ease;
+  cursor: default;
+}
+
+.mf-macro-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  opacity: 0.85;
+}
+
+.mf-macro-value {
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+/* Desktop Hover & Faded State */
+@media (min-width: 768px) {
+  .mf-macro-item {
+    color: #847996; /* Faded default state */
+  }
+  
+  .mf-macro-item:hover {
+    color: #F15BB5; /* Highlighted state */
+    transform: translateY(-2px);
+  }
+}
+{% endstylesheet %}
+
+{% schema %}
+{ "name": "Main Product" }
+{% endschema %}

@@ -1,0 +1,383 @@
+<div id="mf-collection-{{ section.id }}" class="mf-collection-section">
+  <div class="mf-collection-header">
+    <div class="mf-header-text">
+      <h2 class="mf-collection-title">{{ section.settings.heading }}</h2>
+      {% if section.settings.subheading != blank %}
+        <p class="mf-collection-subtitle">{{ section.settings.subheading }}</p>
+      {% endif %}
+    </div>
+
+    <div class="mf-slider-controls">
+      <button type="button" class="mf-slider-arrow mf-prev-btn" aria-label="Previous products">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <button type="button" class="mf-slider-arrow mf-next-btn" aria-label="Next products">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="mf-product-grid">
+    {% assign selected_collection = section.settings.collection %}
+    {% if selected_collection != blank and selected_collection.products_count > 0 %}
+      {% for product in selected_collection.products limit: section.settings.products_to_show %}
+        <div class="mf-product-card">
+          <a href="{{ product.url }}" class="mf-product-link">
+            <div class="mf-product-image-wrapper">
+              {% if product.featured_image != blank %}
+                <img src="{{ product.featured_image | image_url: width: 600 }}"
+                     alt="{{ product.featured_image.alt | default: product.title | escape }}"
+                     width="{{ product.featured_image.width }}"
+                     height="{{ product.featured_image.height }}"
+                     class="mf-product-img"
+                     loading="lazy">
+              {% else %}
+                <div class="mf-placeholder-img">NO IMAGE</div>
+              {% endif %}
+            </div>
+            <div class="mf-product-info">
+              <h3 class="mf-product-title">{{ product.title }}</h3>
+              <p class="mf-product-price">{{ product.price | money }}</p>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    {% else %}
+      {% for i in (1..section.settings.products_to_show) %}
+        <div class="mf-product-card mf-placeholder-card">
+          <div class="mf-product-image-wrapper mf-placeholder-bg">
+            <span class="mf-placeholder-text">PRODUCT {{ i }}</span>
+          </div>
+          <div class="mf-product-info">
+            <h3 class="mf-product-title">SAMPLE PRODUCT ITEM</h3>
+            <p class="mf-product-price">$49.99</p>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+
+<style>
+/* ==========================================================================
+   CONTAINMENT FIX: Prevent Page-Level Horizontal Panning
+   ========================================================================== */
+
+/* 1. Force the section wrapper to respect screen boundaries and clip overflow */
+.mf-collection-section {
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 32px 16px !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important; /* CRITICAL: Clips anything trying to push past the screen */
+  position: relative;
+}
+
+/* 2. Ensure the header text doesn't cause layout expansion */
+.mf-collection-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mf-header-text {
+  min-width: 0; /* Prevents text from forcing parent width open */
+  flex: 1;
+}
+
+.mf-collection-title {
+  color: #FDF0D5;
+  font-size: clamp(1.35rem, 4vw, 2.2rem);
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin: 0 0 6px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mf-collection-subtitle {
+  color: #847996;
+  font-size: clamp(0.85rem, 2vw, 1.05rem);
+  margin: 0;
+}
+
+/* Slider Controls */
+.mf-slider-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mf-slider-arrow {
+  background-color: transparent;
+  color: #847996;
+  border: 2px solid #847996;
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.mf-slider-arrow:hover {
+  color: #310A31;
+  background-color: #F15BB5;
+  border-color: #F15BB5;
+  box-shadow: 0 0 10px rgba(241, 91, 181, 0.4);
+}
+
+/* 3. STRICT BOUNDARY GRID TRACK */
+.mf-product-grid {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important; /* Allows flex container to shrink inside screen bounds */
+  box-sizing: border-box !important;
+  
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  
+  /* Confines touch gestures strictly to horizontal scrolling */
+  touch-action: pan-x !important; 
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  
+  gap: 12px;
+  padding-bottom: 12px;
+  margin: 0;
+}
+
+/* Custom Scrollbar for Webkit */
+.mf-product-grid::-webkit-scrollbar {
+  height: 4px;
+}
+.mf-product-grid::-webkit-scrollbar-track {
+  background: rgba(132, 121, 150, 0.15);
+  border-radius: 2px;
+}
+.mf-product-grid::-webkit-scrollbar-thumb {
+  background: #F15BB5;
+  border-radius: 2px;
+}
+
+/* 4. CARD SIZING & DRAG PREVENTION */
+.mf-product-card {
+  flex: 0 0 72vw !important;
+  width: 72vw !important;
+  max-width: 250px !important;
+  min-width: 180px !important;
+  box-sizing: border-box !important;
+  scroll-snap-align: start;
+  background-color: rgba(132, 121, 150, 0.08);
+  border: 1px solid #847996;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0 !important;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.mf-product-card img,
+.mf-product-card a {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.mf-product-card:hover {
+  transform: translateY(-4px);
+  border-color: #F15BB5;
+}
+
+.mf-product-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.mf-product-image-wrapper {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  background-color: #1e061e;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mf-product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.mf-placeholder-img, .mf-placeholder-text {
+  color: #847996;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.mf-product-info {
+  padding: 12px;
+}
+
+.mf-product-title {
+  color: #FDF0D5;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mf-product-price {
+  color: #F15BB5;
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+/* Breakpoint: Tablet (768px and up) */
+@media (min-width: 768px) {
+  .mf-collection-section {
+    padding: 48px 24px !important;
+  }
+  .mf-collection-header {
+    margin-bottom: 24px;
+  }
+  .mf-product-grid {
+    gap: 18px;
+    padding-bottom: 16px;
+  }
+  .mf-product-grid::-webkit-scrollbar {
+    height: 6px;
+  }
+  .mf-product-card {
+    flex: 0 0 240px !important;
+    width: 240px !important;
+    max-width: none !important;
+  }
+  .mf-product-info {
+    padding: 16px;
+  }
+  .mf-product-title {
+    font-size: 1rem;
+  }
+  .mf-product-price {
+    font-size: 1.1rem;
+  }
+  .mf-slider-arrow {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Breakpoint: Desktop (1024px and up) */
+@media (min-width: 1024px) {
+  .mf-collection-section {
+    padding: 60px 32px !important;
+  }
+  .mf-product-grid {
+    gap: 24px;
+  }
+  .mf-product-card {
+    flex: 0 0 270px !important;
+    width: 270px !important;
+  }
+}
+</style>
+
+<script>
+  (function() {
+    const initSlider = () => {
+      const section = document.getElementById('mf-collection-{{ section.id }}');
+      if (!section) return;
+
+      const grid = section.querySelector('.mf-product-grid');
+      const prevBtn = section.querySelector('.mf-prev-btn');
+      const nextBtn = section.querySelector('.mf-next-btn');
+
+      if (!grid || !prevBtn || !nextBtn) return;
+
+      const getScrollDistance = () => {
+        const card = grid.querySelector('.mf-product-card');
+        if (!card) return 300;
+        const gap = parseInt(window.getComputedStyle(grid).gap) || 12;
+        return card.offsetWidth + gap;
+      };
+
+      prevBtn.addEventListener('click', () => {
+        grid.scrollBy({ left: -getScrollDistance(), behavior: 'smooth' });
+      });
+
+      nextBtn.addEventListener('click', () => {
+        grid.scrollBy({ left: getScrollDistance(), behavior: 'smooth' });
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSlider);
+    } else {
+      initSlider();
+    }
+
+    // Re-initialize slider inside Shopify Theme Customizer
+    document.addEventListener('shopify:section:load', (e) => {
+      if (e.detail.sectionId === '{{ section.id }}') {
+        initSlider();
+      }
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Featured Collection Grid",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "LATEST DROPS & MEALS"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "High-grade performance gear paired with macro-balanced nutrition."
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 12,
+      "step": 2,
+      "default": 4,
+      "label": "Products to show"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured Collection Grid"
+    }
+  ]
+}
+{% endschema %}

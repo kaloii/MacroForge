@@ -1,0 +1,159 @@
+<section class="mf-about-section">
+  <div class="mf-about-container">
+    
+    <div class="mf-about-content">
+      <h2 class="mf-about-heading">{{ section.settings.heading }}</h2>
+      <div class="mf-about-text-body">
+        {{ section.settings.text }}
+      </div>
+    </div>
+
+    <div class="mf-about-media">
+      {% if section.settings.logo_image != blank %}
+        <img src="{{ section.settings.logo_image | image_url: width: 800 }}" alt="{{ section.settings.heading | escape }}"
+            width="{{ section.settings.image.width }}" 
+     height="{{ section.settings.image.height }}" loading="lazy" class="mf-about-img">
+      {% else %}
+        {{ 'image' | placeholder_svg_tag: 'mf-placeholder-svg' }}
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+
+{% stylesheet %}
+@keyframes mfFadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(25px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .mf-about-section {
+    padding: 6rem 2rem;
+    background-color: var(--mf-bg-dark, #310A31);
+    color: var(--mf-text-light, #FDF0D5);
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .mf-about-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4rem;
+  }
+
+  .mf-about-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .mf-about-heading {
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--mf-text-light, #FDF0D5);
+    line-height: 1.15;
+    margin: 0;
+  }
+
+  .mf-about-text-body {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--mf-border-subtle, #847996);
+    font-weight: 500;
+  }
+  
+  .mf-about-text-body p {
+    margin: 0;
+  }
+
+  .mf-about-media {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mf-about-img {
+    max-width: 100%;
+    max-height: 400px;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.4));
+  }
+
+  .mf-placeholder-svg {
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    background-color: #1E061E;
+    border: 1px dashed var(--mf-border-subtle, #847996);
+    fill: var(--mf-border-subtle, #847996);
+    border-radius: 6px;
+  }
+
+  /* Mobile Responsive Stacking */
+  @media (max-width: 767px) {
+    .mf-about-section {
+      padding: 3.5rem 1.25rem;
+    }
+
+    .mf-about-container {
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .mf-about-heading {
+      font-size: 1.8rem;
+    }
+
+    .mf-about-text-body {
+      font-size: 0.95rem;
+    }
+
+    .mf-about-media {
+      width: 100%;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "MacroForge About Banner",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Inevitable progress. One rep at a time."
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Description Text",
+      "default": "<p>At MacroForge, we provide state-of-the-art fitness equipment, along with macro-friendly meals and supplements that fit a wide variety of diet plans. Whether you simply want to be fit, or you have aspirations of being an elite athlete; MacroForge is the shop for you.</p>"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_image",
+      "label": "Company Logo / Feature Image"
+    }
+  ],
+  "presets": [
+    {
+      "name": "MacroForge About Banner"
+    }
+  ]
+}
+{% endschema %}

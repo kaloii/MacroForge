@@ -1,0 +1,140 @@
+<div class="mf-hero-banner">
+  <div class="mf-hero-overlay"></div>
+  {% if section.settings.image != blank %}
+    <img src="{{ section.settings.image | image_url: width: 1800 }}" alt="{{ section.settings.heading }}" width="{{ section.settings.image.width }}" 
+     height="{{ section.settings.image.height }}" class="mf-hero-img" loading="lazy">
+  {% endif %}
+
+  <div class="mf-hero-content">
+    <h1 class="mf-hero-title">{{ section.settings.heading }}</h1>
+    <p class="mf-hero-subtitle">{{ section.settings.subheading }}</p>
+    {% if section.settings.button_label != blank %}
+      <a href="{{ section.settings.button_link }}" class="mf-hero-btn">
+        {{ section.settings.button_label }}
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .mf-hero-banner {
+    position: relative;
+    min-height: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #310A31;
+    overflow: hidden;
+    border-bottom: 2px solid #847996;
+    padding: 60px 20px;
+    text-align: center;
+  }
+  .mf-hero-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    opacity: 0.35;
+  }
+  .mf-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(49, 10, 49, 0.4) 0%, rgba(49, 10, 49, 0.95) 100%);
+    z-index: 2;
+  }
+  .mf-hero-content {
+    position: relative;
+    z-index: 3;
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .mf-hero-title {
+    color: #FDF0D5 !important;
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin: 0 0 16px 0 !important;
+    text-transform: uppercase;
+    text-align: center !important;
+    width: 100%;
+  }
+  .mf-hero-subtitle {
+    color: #847996 !important;
+    font-size: 1.2rem;
+    margin: 0 0 32px 0 !important;
+    line-height: 1.6;
+    text-align: center !important;
+    width: 100%;
+    max-width: 650px;
+  }
+  .mf-hero-btn {
+    display: inline-block;
+    background-color: #F15BB5;
+    color: #310A31 !important;
+    padding: 14px 32px;
+    font-weight: 800;
+    font-size: 1rem;
+    text-decoration: none;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .mf-hero-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(241, 91, 181, 0.6);
+  }
+</style>
+
+{% schema %}
+{
+  "name": "MACROFORGE Hero Banner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Background Image"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "FORGE YOUR MACROS. LIFT YOUR LEGACY."
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Precision gym hardware paired with fresh, macro-targeted meal prep to hit your targets."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button Label",
+      "default": "BUILD YOUR STACK"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "MACROFORGE Hero Banner"
+    }
+  ]
+}
+{% endschema %}

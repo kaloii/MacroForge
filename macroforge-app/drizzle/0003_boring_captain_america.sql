@@ -1,0 +1,1 @@
+ALTER TABLE `batch_waitlists` ADD `quantity` int DEFAULT 1 NOT NULL;

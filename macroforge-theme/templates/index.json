@@ -1,0 +1,66 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero_banner_qnQWN6": {
+      "type": "hero-banner",
+      "name": "MACROFORGE Hero Banner",
+      "settings": {
+        "image": "shopify://shop_images/548747f9617fe7201e94929331b4a334.jpg",
+        "heading": "FORGE YOUR MACROS. LIFT YOUR LEGACY.",
+        "subheading": "Precision gym hardware paired with fresh, macro-targeted meal prep to hit your targets.",
+        "button_label": "BUILD YOUR STACK",
+        "button_link": "shopify://pages/macro-builder"
+      }
+    },
+    "mf_about_banner_KzwQqh": {
+      "type": "mf-about-banner",
+      "custom_css": [],
+      "name": "MacroForge About Banner",
+      "settings": {
+        "heading": "Inevitable progress. One rep at a time.",
+        "text": "<p>At MacroForge, we provide state-of-the-art fitness equipment, along with macro-friendly meals and supplements that fit a wide variety of diet plans. Whether you simply want to be fit, or you have aspirations of being an elite athlete; MacroForge is the shop for you.</p>",
+        "logo_image": "shopify://shop_images/ORGE_5_-Photoroom.png"
+      }
+    },
+    "featured_collection_bwtn4R": {
+      "type": "featured-collection",
+      "name": "Featured Collection Grid",
+      "settings": {
+        "heading": "LATEST DROPS & MEALS",
+        "subheading": "High-grade performance gear paired with macro-balanced nutrition.",
+        "collection": "new-arrivals",
+        "products_to_show": 4
+      }
+    },
+    "secondary_banner_FpNhka": {
+      "type": "secondary-banner",
+      "name": "Secondary Promo Banner",
+      "settings": {
+        "badge": "HYBRID OFFER",
+        "heading": "BUNDLE HARDWARE WITH FUEL",
+        "description": "Subscribe to any monthly meal plan and get 20% off all custom MACROFORGE lifting gear.",
+        "button_label": "CLAIM YOUR DISCOUNT",
+        "button_link": ""
+      }
+    },
+    "17863684006b78cbca": {
+      "type": "apps",
+      "settings": {}
+    }
+  },
+  "order": [
+    "hero_banner_qnQWN6",
+    "mf_about_banner_KzwQqh",
+    "featured_collection_bwtn4R",
+    "secondary_banner_FpNhka",
+    "17863684006b78cbca"
+  ]
+}

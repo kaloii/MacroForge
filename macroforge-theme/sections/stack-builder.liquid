@@ -1,0 +1,1086 @@
+<section class="mf-stack-builder-section mf-forge-engine" id="forge-stack-builder">
+  <div class="mf-container">
+    <h2 class="mf-section-title">THE FORGE STACK ENGINE</h2>
+    <p class="mf-section-subtitle">Select your objective. Build your gear + meal stack. Unlock up to 20% off.</p>
+
+    <!-- Progress Bar Track -->
+    <div class="mf-forge-progress-container">
+      <div class="mf-forge-progress-bar" id="mf-progress-bar" style="width: 33%;"></div>
+    </div>
+
+    <div class="mf-builder-grid">
+      <!-- Step 1: Objective Selection -->
+      <div class="mf-builder-step mf-forge-step active-step" data-step="1">
+        <div class="mf-forge-step-header">
+          <h3 class="mf-forge-step-title">1. Target Objective</h3>
+          <span class="mf-forge-step-counter">Step 1 of 3</span>
+        </div>
+
+        <div class="mf-objective-selector mf-forge-options-grid">
+          <button type="button" class="mf-obj-btn mf-forge-option-btn mf-selected" data-goal="hypertrophy" data-protein-ratio="2.2" data-carb-ratio="3.0" data-fat-ratio="1.0">
+            <strong>Hypertrophy</strong>
+            <small>High Protein / Moderate Carbs</small>
+          </button>
+          <button type="button" class="mf-obj-btn mf-forge-option-btn" data-goal="cutting" data-protein-ratio="2.6" data-carb-ratio="1.5" data-fat-ratio="0.8">
+            <strong>Max Shred</strong>
+            <small>Ultra-High Protein / Low Carb</small>
+          </button>
+          <button type="button" class="mf-obj-btn mf-forge-option-btn" data-goal="endurance" data-protein-ratio="1.8" data-carb-ratio="4.5" data-fat-ratio="1.2">
+            <strong>Power/Endurance</strong>
+            <small>High Carb / High Recovery</small>
+          </button>
+        </div>
+
+        <div class="mf-weight-input-group">
+          <label for="user-weight">Bodyweight (kg):</label>
+          <input type="number" id="user-weight" value="80" min="40" max="180">
+        </div>
+
+        <!-- Target Breakdown Display in Step 1 -->
+        <div class="mf-macro-breakdown-box" style="margin-top: 16px; margin-bottom: 0;">
+          <h4>Estimated Daily Targets</h4>
+          <div class="mf-macro-details-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="mf-macro-detail-item">
+              <span>Protein</span>
+              <strong id="step1-target-protein">176g</strong>
+            </div>
+            <div class="mf-macro-detail-item">
+              <span>Carbs</span>
+              <strong id="step1-target-carbs">240g</strong>
+            </div>
+            <div class="mf-macro-detail-item">
+              <span>Fat</span>
+              <strong id="step1-target-fat">80g</strong>
+            </div>
+            <div class="mf-macro-detail-item">
+              <span>Calories</span>
+              <strong id="step1-target-cals">2,300</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Choose Hardware & Fuel -->
+      <div class="mf-builder-step mf-forge-step" data-step="2" style="display: none;">
+        <div class="mf-forge-step-header">
+          <h3 class="mf-forge-step-title">2. Configure Stack</h3>
+          <span class="mf-forge-step-counter">Step 2 of 3</span>
+        </div>
+        
+        {% assign default_gear = collections['gym-gear'].products.first | default: collections['gear'].products.first | default: collections['all'].products.first %}
+        <div class="mf-stack-slot" data-slot="gear">
+          <h4>Select Lifting Gear</h4>
+          <div class="mf-modal-trigger-wrapper" id="slot-gear-trigger">
+            <span id="slot-gear-display" class="mf-trigger-display">
+              {{ default_gear.title | default: 'Select Gear' }} - {{ default_gear.price | money }}
+            </span>
+            <button type="button" class="mf-trigger-btn">Change ⚡</button>
+          </div>
+          <input type="hidden" id="slot-gear-select" value="{{ default_gear.selected_or_first_available_variant.id | default: default_gear.variants.first.id }}" data-price="{{ default_gear.price | default: 0 }}">
+        </div>
+
+        {% assign default_meal = collections['nutrition-fuel'].products.first | default: collections['meals'].products.first | default: collections['all'].products.first %}
+        <div class="mf-stack-slot" data-slot="meal">
+          <h4>Select Fresh Meal Prep Batch (7-Day)</h4>
+          <div class="mf-modal-trigger-wrapper" id="slot-meal-trigger">
+            <span id="slot-meal-display" class="mf-trigger-display">
+              {{ default_meal.title | default: 'Select Meal' }} ({{ default_meal.metafields.mf_fuel.protein_g | default: default_meal.metafields.custom.protein | default: 45 }}g P) - {{ default_meal.price | money }}
+            </span>
+            <button type="button" class="mf-trigger-btn">Change ⚡</button>
+          </div>
+          <input type="hidden" id="slot-meal-select" value="{{ default_meal.selected_or_first_available_variant.id | default: default_meal.variants.first.id }}" data-price="{{ default_meal.price | default: 0 }}" data-protein="{{ default_meal.metafields.mf_fuel.protein_g | default: default_meal.metafields.custom.protein | default: 45 }}" data-carbs="{{ default_meal.metafields.mf_fuel.carbs_g | default: default_meal.metafields.custom.carbs | default: 55 }}" data-fat="{{ default_meal.metafields.mf_fuel.fat_g | default: default_meal.metafields.custom.fat | default: 15 }}" data-cals="{{ default_meal.metafields.mf_fuel.calories | default: default_meal.metafields.custom.calories | default: 535 }}">
+        </div>
+
+        {% assign default_supp = collections['supplement'].products.first | default: collections['supplements'].products.first | default: collections['all'].products.first %}
+        <div class="mf-stack-slot" data-slot="supp">
+          <h4>Select Supplement</h4>
+          <div class="mf-modal-trigger-wrapper" id="slot-supp-trigger">
+            <span id="slot-supp-display" class="mf-trigger-display">
+              {{ default_supp.title | default: 'Select Supplement' }} ({{ default_supp.metafields.mf_fuel.protein_g | default: default_supp.metafields.custom.protein | default: 25 }}g P) - {{ default_supp.price | money }}
+            </span>
+            <button type="button" class="mf-trigger-btn">Change ⚡</button>
+          </div>
+          <input type="hidden" id="slot-supp-select" value="{{ default_supp.selected_or_first_available_variant.id | default: default_supp.variants.first.id }}" data-price="{{ default_supp.price | default: 0 }}" data-protein="{{ default_supp.metafields.mf_fuel.protein_g | default: default_supp.metafields.custom.protein | default: 25 }}" data-carbs="{{ default_supp.metafields.mf_fuel.carbs_g | default: default_supp.metafields.custom.carbs | default: 3 }}" data-fat="{{ default_supp.metafields.mf_fuel.fat_g | default: default_supp.metafields.custom.fat | default: 1 }}" data-cals="{{ default_supp.metafields.mf_fuel.calories | default: default_supp.metafields.custom.calories | default: 120 }}">
+        </div>
+      </div>
+
+      <!-- Step 3: Bundle Summary, Macro Breakdown & Dynamic Checkout -->
+      <div class="mf-builder-summary mf-forge-step" data-step="3" style="display: none;">
+        <div class="mf-forge-step-header">
+          <h3 class="mf-forge-step-title">3. Stack Summary & Macros</h3>
+          <span class="mf-forge-step-counter">Step 3 of 3</span>
+        </div>
+
+        <!-- Stack Nutrition Breakdown Box -->
+        <div class="mf-macro-breakdown-box">
+          <h4>Stack Nutrition & Macro Coverage</h4>
+          <div class="mf-macro-details-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="mf-macro-detail-item">
+              <span>Protein (<strong id="macro-coverage-protein">30%</strong>)</span>
+              <strong id="calc-stack-protein">70g</strong>
+            </div>
+            <div class="mf-macro-detail-item">
+              <span>Carbs (<strong id="macro-coverage-carbs">24%</strong>)</span>
+              <strong id="calc-stack-carbs">58g</strong>
+            </div>
+            <div class="mf-macro-detail-item">
+              <span>Fat (<strong id="macro-coverage-fat">20%</strong>)</span>
+              <strong id="calc-stack-fat">16g</strong>
+            </div>
+            <div class="mf-macro-detail-item">
+              <span>Calories (<strong id="macro-coverage-cals">28%</strong>)</span>
+              <strong id="calc-stack-cals">655 kcal</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="mf-summary-metrics">
+          <div class="mf-metric mf-highlight-metric">
+            <span>Stack Discount</span>
+            <strong id="stack-discount-badge" class="mf-highlight">15% OFF</strong>
+          </div>
+          <div class="mf-metric mf-highlight-metric">
+            <span>Pricing Total</span>
+            <div class="mf-summary-price-inline">
+              <span class="mf-old-price" id="bundle-old-price">$0.00</span>
+              <span class="mf-final-price" id="bundle-final-price">$0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" id="mf-add-stack-to-cart" class="mf-btn-primary mf-forge-option-btn mf-selected" style="width: 100%; justify-content: center;">
+          ADD ENTIRE FORGE STACK TO CART
+        </button>
+      </div>
+    </div>
+
+    <!-- Sequential Navigation Controls -->
+    <div class="mf-forge-nav-controls">
+      <button type="button" id="mf-prev-step" class="mf-forge-nav-btn" disabled>Back</button>
+      <button type="button" id="mf-next-step" class="mf-forge-nav-btn mf-next-btn">Next Step</button>
+    </div>
+  </div>
+</section>
+
+<!-- SELECTION MODAL -->
+<div id="mf-product-modal" class="mf-modal" style="display: none;">
+  <div class="mf-modal-content">
+    <div class="mf-modal-header">
+      <h3 id="mf-modal-heading">Select Item</h3>
+      <button type="button" id="mf-modal-close" class="mf-close-btn">&times;</button>
+    </div>
+    <div class="mf-modal-grid" id="mf-modal-grid">
+      <!-- Populated dynamically via JS -->
+    </div>
+  </div>
+</div>
+
+<!-- EMBED PRODUCT CATALOG DATA FOR MODAL -->
+{% assign gear_collection = collections['gym-gear'] | default: collections['gear'] | default: collections['all'] %}
+{% assign meal_collection = collections['nutrition-fuel'] | default: collections['meals'] | default: collections['all'] %}
+{% assign supp_collection = collections['supplement'] | default: collections['supplements'] | default: collections['all'] %}
+
+<script>
+  window.mfCatalog = {
+    gear: [
+      {% if gear_collection and gear_collection.products %}
+        {% for product in gear_collection.products %}
+          {
+            id: {{ product.selected_or_first_available_variant.id | default: product.variants.first.id | json }},
+            title: {{ product.title | json }},
+            price: {{ product.price | default: 0 | json }},
+            formattedPrice: {{ product.price | money | json }},
+            image: {% if product.featured_image %}{{ product.featured_image | image_url: width: 300 | json }}{% else %}''{% endif %}
+          }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      {% endif %}
+    ],
+    meal: [
+      {% if meal_collection and meal_collection.products %}
+        {% for product in meal_collection.products %}
+          {
+            id: {{ product.selected_or_first_available_variant.id | default: product.variants.first.id | json }},
+            title: {{ product.title | json }},
+            price: {{ product.price | default: 0 | json }},
+            formattedPrice: {{ product.price | money | json }},
+            image: {% if product.featured_image %}{{ product.featured_image | image_url: width: 300 | json }}{% else %}''{% endif %},
+            protein: {{ product.metafields.mf_fuel.protein_g | default: product.metafields.custom.protein | default: 45 | json }},
+            carbs: {{ product.metafields.mf_fuel.carbs_g | default: product.metafields.custom.carbs | default: 55 | json }},
+            fat: {{ product.metafields.mf_fuel.fat_g | default: product.metafields.custom.fat | default: 15 | json }},
+            calories: {{ product.metafields.mf_fuel.calories | default: product.metafields.custom.calories | default: 535 | json }}
+          }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      {% endif %}
+    ],
+    supp: [
+      {% if supp_collection and supp_collection.products %}
+        {% for product in supp_collection.products %}
+          {
+            id: {{ product.selected_or_first_available_variant.id | default: product.variants.first.id | json }},
+            title: {{ product.title | json }},
+            price: {{ product.price | default: 0 | json }},
+            formattedPrice: {{ product.price | money | json }},
+            image: {% if product.featured_image %}{{ product.featured_image | image_url: width: 300 | json }}{% else %}''{% endif %},
+            protein: {{ product.metafields.mf_fuel.protein_g | default: product.metafields.custom.protein | default: 25 | json }},
+            carbs: {{ product.metafields.mf_fuel.carbs_g | default: product.metafields.custom.carbs | default: 3 | json }},
+            fat: {{ product.metafields.mf_fuel.fat_g | default: product.metafields.custom.fat | default: 1 | json }},
+            calories: {{ product.metafields.mf_fuel.calories | default: product.metafields.custom.calories | default: 120 | json }}
+          }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      {% endif %}
+    ]
+  };
+</script>
+
+{% stylesheet %}
+  /* ==========================================================================
+     FORGE STACK ENGINE STYLING
+     ========================================================================== */
+
+  .mf-forge-engine {
+    background-color: #240724;
+    border: 1px solid rgba(132, 121, 150, 0.25);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    color: #FDF0D5;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .mf-forge-engine .mf-section-title {
+    color: #FDF0D5;
+    margin-top: 0;
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+
+  .mf-forge-engine .mf-section-subtitle {
+    color: #847996;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+
+  /* Progress Bar Track */
+  .mf-forge-progress-container {
+    width: 100%;
+    background-color: rgba(132, 121, 150, 0.15);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .mf-forge-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #847996, #F15BB5);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  /* Step Header & Info */
+  .mf-forge-step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .mf-forge-step-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #FDF0D5;
+    margin: 0;
+  }
+
+  .mf-forge-step-counter {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #847996;
+    text-transform: uppercase;
+  }
+
+  /* Target Objective Buttons */
+  .mf-forge-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .mf-forge-option-btn {
+    background-color: #310A31;
+    color: #FDF0D5;
+    border: 2px solid #847996;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  .mf-forge-option-btn small {
+    font-size: 0.75rem;
+    font-weight: 500;
+    opacity: 0.8;
+    margin-top: 4px;
+    text-transform: none;
+  }
+
+  .mf-forge-option-btn:hover {
+    color: #310A31;
+    background-color: #F15BB5;
+    border-color: #F15BB5;
+    box-shadow: 0 0 12px rgba(241, 91, 181, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .mf-forge-option-btn.mf-selected,
+  .mf-forge-option-btn.active {
+    color: #310A31;
+    background-color: #F15BB5;
+    border-color: #F15BB5;
+    box-shadow: 0 0 15px rgba(241, 91, 181, 0.6);
+  }
+
+  /* Weight Input & Slots Adaptation */
+  .mf-weight-input-group,
+  .mf-stack-slot {
+    background-color: rgba(36, 7, 36, 0.6);
+    border: 1px solid rgba(132, 121, 150, 0.2);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .mf-weight-input-group label,
+  .mf-stack-slot h4 {
+    display: block;
+    color: #FDF0D5;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .mf-weight-input-group input[type="number"] {
+    width: 100%;
+    background-color: #310A31;
+    color: #FDF0D5;
+    border: 1px solid #847996;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  /* Modal Trigger Elements */
+  .mf-modal-trigger-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #310A31;
+    border: 1px solid #847996;
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mf-modal-trigger-wrapper:hover {
+    border-color: #F15BB5;
+    box-shadow: 0 0 8px rgba(241, 91, 181, 0.3);
+  }
+
+  .mf-trigger-display {
+    color: #FDF0D5;
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 10px;
+  }
+
+  .mf-trigger-btn {
+    background: transparent;
+    border: 1px solid #F15BB5;
+    color: #F15BB5;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .mf-trigger-btn:hover {
+    background-color: #F15BB5;
+    color: #310A31;
+  }
+
+  /* Modal Styles */
+  .mf-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(36, 7, 36, 0.85);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+  }
+
+  .mf-modal-content {
+    background: #310A31;
+    border: 2px solid #847996;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 650px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  }
+
+  .mf-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #847996;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mf-modal-header h3 {
+    color: #FDF0D5;
+    margin: 0;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .mf-close-btn {
+    background: none;
+    border: none;
+    color: #FDF0D5;
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  .mf-modal-grid {
+    padding: 20px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .mf-modal-item {
+    background: rgba(36, 7, 36, 0.6);
+    border: 1px solid #847996;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .mf-modal-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+
+  .mf-modal-item h4 {
+    color: #FDF0D5;
+    font-size: 13px;
+    margin: 0 0 6px;
+    font-weight: 700;
+  }
+
+  .mf-modal-item-price {
+    color: #F15BB5;
+    font-weight: 800;
+    font-size: 13px;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .mf-select-item-btn {
+    background: #F15BB5;
+    color: #310A31;
+    border: none;
+    padding: 8px;
+    border-radius: 4px;
+    font-weight: 900;
+    cursor: pointer;
+    width: 100%;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+
+  /* Macro Breakdown Styles in Step 3 */
+  .mf-macro-breakdown-box {
+    background-color: rgba(36, 7, 36, 0.6);
+    border: 1px solid rgba(132, 121, 150, 0.2);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+
+  .mf-macro-breakdown-box h4 {
+    color: #FDF0D5;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 0 0 10px 0;
+  }
+
+  .mf-macro-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .mf-macro-detail-item {
+    background-color: #310A31;
+    border: 1px solid #847996;
+    border-radius: 6px;
+    padding: 8px;
+    text-align: center;
+  }
+
+  .mf-macro-detail-item span {
+    display: block;
+    font-size: 0.7rem;
+    color: #847996;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .mf-macro-detail-item span strong {
+    color: #F15BB5;
+    font-size: 0.75rem;
+  }
+
+  .mf-macro-detail-item strong {
+    font-size: 0.95rem;
+    color: #FDF0D5;
+  }
+
+  /* Summary Metrics Alignment */
+  .mf-summary-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .mf-metric {
+    background-color: rgba(36, 7, 36, 0.6);
+    border: 1px solid rgba(132, 121, 150, 0.2);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mf-metric.mf-highlight-metric {
+    background-color: #310A31;
+    border: 2px solid #F15BB5;
+    box-shadow: 0 0 12px rgba(241, 91, 181, 0.3);
+  }
+
+  .mf-metric span {
+    display: block;
+    font-size: 0.75rem;
+    color: #847996;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .mf-metric.mf-highlight-metric span {
+    color: #FDF0D5;
+  }
+
+  .mf-metric strong {
+    font-size: 1.1rem;
+    color: #FDF0D5;
+  }
+
+  .mf-summary-price-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mf-old-price {
+    text-decoration: line-through;
+    color: #847996;
+    font-size: 0.9rem;
+  }
+
+  .mf-final-price {
+    color: #F15BB5;
+    font-size: 1.1rem;
+    font-weight: 900;
+  }
+
+  /* Sequential Navigation Controls */
+  .mf-forge-nav-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(132, 121, 150, 0.2);
+    padding-top: 16px;
+    margin-top: 20px;
+  }
+
+  .mf-forge-nav-btn {
+    background-color: transparent;
+    color: #847996;
+    border: 1px solid #847996;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mf-forge-nav-btn:hover:not(:disabled) {
+    color: #FDF0D5;
+    border-color: #FDF0D5;
+    background-color: rgba(132, 121, 150, 0.1);
+  }
+
+  .mf-forge-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .mf-forge-nav-btn.mf-next-btn {
+    background-color: #F15BB5;
+    color: #310A31;
+    border-color: #F15BB5;
+  }
+
+  .mf-forge-nav-btn.mf-next-btn:hover:not(:disabled) {
+    background-color: #ff6ac1;
+    border-color: #ff6ac1;
+    box-shadow: 0 0 10px rgba(241, 91, 181, 0.5);
+    color: #310A31;
+  }
+
+@media (max-width: 767px) {
+  .mf-stack-container,
+  .mf-stack-container * {
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+  }
+
+  .mf-stack-container [class*="row"],
+  .mf-stack-container [class*="grid"],
+  .mf-stack-container [class*="list"],
+  .mf-stack-container [class*="wrapper"] {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .mf-builder-step[data-step="2"],
+  .mf-builder-step[data-step="2"] .mf-stack-slot {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  .mf-builder-step[data-step="2"] .mf-modal-trigger-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    gap: 0.75rem !important;
+  }
+
+  .mf-builder-step[data-step="2"] .mf-trigger-display {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .mf-builder-step[data-step="2"] .mf-trigger-btn {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .mf-stack-product-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+{% endstylesheet %}
+
+<script src="{{ 'macroforge-builder.js' | asset_url }}" defer></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = 1;
+    const totalSteps = 3;
+    
+    const steps = document.querySelectorAll('.mf-forge-step');
+    const progressBar = document.getElementById('mf-progress-bar');
+    const prevBtn = document.getElementById('mf-prev-step');
+    const nextBtn = document.getElementById('mf-next-step');
+    
+    // Engine State Control Elements
+    const weightInput = document.getElementById('user-weight');
+    
+    // Step 1 Target Elements
+    const step1ProteinEl = document.getElementById('step1-target-protein');
+    const step1CarbsEl = document.getElementById('step1-target-carbs');
+    const step1FatEl = document.getElementById('step1-target-fat');
+    const step1CalsEl = document.getElementById('step1-target-cals');
+
+    // Step 3 Stack & Coverage Elements
+    const stackProteinEl = document.getElementById('calc-stack-protein');
+    const stackCarbsEl = document.getElementById('calc-stack-carbs');
+    const stackFatEl = document.getElementById('calc-stack-fat');
+    const stackCalsEl = document.getElementById('calc-stack-cals');
+
+    const coverageProteinEl = document.getElementById('macro-coverage-protein');
+    const coverageCarbsEl = document.getElementById('macro-coverage-carbs');
+    const coverageFatEl = document.getElementById('macro-coverage-fat');
+    const coverageCalsEl = document.getElementById('macro-coverage-cals');
+
+    const objButtons = document.querySelectorAll('.mf-obj-btn');
+    const gearInput = document.getElementById('slot-gear-select');
+    const mealInput = document.getElementById('slot-meal-select');
+    const suppInput = document.getElementById('slot-supp-select');
+    const addCartBtn = document.getElementById('mf-add-stack-to-cart');
+
+    // Modal Elements
+    const modal = document.getElementById('mf-product-modal');
+    const modalClose = document.getElementById('mf-modal-close');
+    const modalGrid = document.getElementById('mf-modal-grid');
+    const modalHeading = document.getElementById('mf-modal-heading');
+
+    let activeProteinRatio = 2.2;
+    let activeCarbRatio = 3.0;
+    let activeFatRatio = 1.0;
+
+    function calculateTargetMetrics() {
+      const weight = parseFloat(weightInput ? weightInput.value : 80) || 80;
+      
+      // Calculate Daily Targets
+      const targetProtein = Math.round(weight * activeProteinRatio);
+      const targetCarbs = Math.round(weight * activeCarbRatio);
+      const targetFat = Math.round(weight * activeFatRatio);
+      const targetCals = Math.round((targetProtein * 4) + (targetCarbs * 4) + (targetFat * 9));
+
+      // Update Step 1 Display
+      if (step1ProteinEl) step1ProteinEl.textContent = targetProtein + 'g';
+      if (step1CarbsEl) step1CarbsEl.textContent = targetCarbs + 'g';
+      if (step1FatEl) step1FatEl.textContent = targetFat + 'g';
+      if (step1CalsEl) step1CalsEl.textContent = targetCals.toLocaleString();
+
+      // Aggregate Stack Nutrition from inputs
+      let mealProt = 0, mealCarb = 0, mealFat = 0, mealCal = 0;
+      let suppProt = 0, suppCarb = 0, suppFat = 0, suppCal = 0;
+
+      if (mealInput) {
+        mealProt = parseFloat(mealInput.dataset.protein) || 0;
+        mealCarb = parseFloat(mealInput.dataset.carbs) || 0;
+        mealFat = parseFloat(mealInput.dataset.fat) || 0;
+        mealCal = parseFloat(mealInput.dataset.cals) || 0;
+      }
+
+      if (suppInput) {
+        suppProt = parseFloat(suppInput.dataset.protein) || 0;
+        suppCarb = parseFloat(suppInput.dataset.carbs) || 0;
+        suppFat = parseFloat(suppInput.dataset.fat) || 0;
+        suppCal = parseFloat(suppInput.dataset.cals) || 0;
+      }
+
+      const totalStackProt = mealProt + suppProt;
+      const totalStackCarb = mealCarb + suppCarb;
+      const totalStackFat = mealFat + suppFat;
+      const totalStackCals = mealCal + suppCal;
+
+      if (stackProteinEl) stackProteinEl.textContent = totalStackProt + 'g';
+      if (stackCarbsEl) stackCarbsEl.textContent = totalStackCarb + 'g';
+      if (stackFatEl) stackFatEl.textContent = totalStackFat + 'g';
+      if (stackCalsEl) stackCalsEl.textContent = totalStackCals + ' kcal';
+
+      // Calculate Individual Macro Coverages
+      const covProt = Math.min(100, Math.round((totalStackProt / targetProtein) * 100));
+      const covCarb = Math.min(100, Math.round((totalStackCarb / targetCarbs) * 100));
+      const covFat = Math.min(100, Math.round((totalStackFat / targetFat) * 100));
+      const covCals = Math.min(100, Math.round((totalStackCals / targetCals) * 100));
+
+      if (coverageProteinEl) coverageProteinEl.textContent = covProt + '%';
+      if (coverageCarbsEl) coverageCarbsEl.textContent = covCarb + '%';
+      if (coverageFatEl) coverageFatEl.textContent = covFat + '%';
+      if (coverageCalsEl) coverageCalsEl.textContent = covCals + '%';
+
+      recalculatePricing();
+    }
+
+    function recalculatePricing() {
+      let gearPrice = 0, mealPrice = 0, suppPrice = 0;
+
+      if (gearInput) gearPrice = parseFloat(gearInput.dataset.price) || 0;
+      if (mealInput) mealPrice = parseFloat(mealInput.dataset.price) || 0;
+      if (suppInput) suppPrice = parseFloat(suppInput.dataset.price) || 0;
+
+      const rawTotal = (gearPrice + mealPrice + suppPrice) / 100;
+      const discount = rawTotal >= 150.0 ? 0.20 : 0.15;
+      const finalTotal = rawTotal * (1 - discount);
+
+      const discountBadge = document.getElementById('stack-discount-badge');
+      const oldPriceEl = document.getElementById('bundle-old-price');
+      const finalPriceEl = document.getElementById('bundle-final-price');
+
+      if (discountBadge) discountBadge.textContent = `${Math.round(discount * 100)}% OFF`;
+      if (oldPriceEl) oldPriceEl.textContent = '$' + rawTotal.toFixed(2);
+      if (finalPriceEl) finalPriceEl.textContent = '$' + finalTotal.toFixed(2);
+    }
+
+    // Modal Trigger Handlers
+    const slotTriggers = [
+      { trigger: document.getElementById('slot-gear-trigger'), type: 'gear', display: document.getElementById('slot-gear-display'), input: gearInput },
+      { trigger: document.getElementById('slot-meal-trigger'), type: 'meal', display: document.getElementById('slot-meal-display'), input: mealInput },
+      { trigger: document.getElementById('slot-supp-trigger'), type: 'supp', display: document.getElementById('slot-supp-display'), input: suppInput }
+    ];
+
+    slotTriggers.forEach(slot => {
+      if (slot.trigger) {
+        slot.trigger.addEventListener('click', () => {
+          modalHeading.textContent = `Select ${slot.type === 'gear' ? 'Lifting Gear' : slot.type === 'meal' ? 'Fresh Meal Prep Batch' : 'Supplement'}`;
+          modalGrid.innerHTML = '';
+
+          const catalogItems = (window.mfCatalog && window.mfCatalog[slot.type]) ? window.mfCatalog[slot.type] : [];
+
+          if (catalogItems.length === 0) {
+            modalGrid.innerHTML = '<p style="color: #847996; grid-column: 1/-1; text-align: center;">No items found in catalog collection.</p>';
+          } else {
+            catalogItems.forEach(product => {
+              const itemEl = document.createElement('div');
+              itemEl.className = 'mf-modal-item';
+              let subtitleInfo = '';
+              if (slot.type === 'meal' || slot.type === 'supp') {
+                subtitleInfo = ` (${product.protein}g P / ${product.calories} kcal)`;
+              }
+
+              itemEl.innerHTML = `
+                <img src="${product.image || ''}" alt="${product.title || 'Product'}">
+                <h4>${product.title || ''}${subtitleInfo}</h4>
+                <span class="mf-modal-item-price">${product.formattedPrice || ''}</span>
+                <button type="button" class="mf-select-item-btn">Select Item</button>
+              `;
+
+              itemEl.querySelector('button').addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                slot.input.value = product.id;
+                slot.input.dataset.price = product.price;
+                if (slot.type === 'meal' || slot.type === 'supp') {
+                  slot.input.dataset.protein = product.protein;
+                  slot.input.dataset.carbs = product.carbs;
+                  slot.input.dataset.fat = product.fat;
+                  slot.input.dataset.cals = product.calories;
+                }
+
+                slot.display.textContent = `${product.title}${slot.type !== 'gear' ? ` (${product.protein}g P)` : ''} - ${product.formattedPrice}`;
+
+                modal.style.display = 'none';
+                calculateTargetMetrics();
+              });
+
+              modalGrid.appendChild(itemEl);
+            });
+          }
+
+          modal.style.display = 'flex';
+        });
+      }
+    });
+
+    if (modalClose) {
+      modalClose.addEventListener('click', () => { modal.style.display = 'none'; });
+    }
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) modal.style.display = 'none';
+    });
+
+    // Handle Objective Button selections
+    objButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        objButtons.forEach(b => b.classList.remove('active', 'mf-selected'));
+        this.classList.add('active', 'mf-selected');
+        activeProteinRatio = parseFloat(this.dataset.proteinRatio) || 2.2;
+        activeCarbRatio = parseFloat(this.dataset.carbRatio) || 3.0;
+        activeFatRatio = parseFloat(this.dataset.fatRatio) || 1.0;
+        calculateTargetMetrics();
+      });
+    });
+
+    if (weightInput) {
+      weightInput.addEventListener('input', calculateTargetMetrics);
+    }
+
+    // Add Entire Forge Stack to Cart Action
+    if (addCartBtn) {
+      addCartBtn.addEventListener('click', async () => {
+        try {
+          const cartRes = await fetch('/cart.js');
+          const cartData = await cartRes.json();
+          const hasExistingStack = cartData.items.some(item => item.properties && item.properties._stack_id);
+
+          if (hasExistingStack) {
+            alert('You already have a Forge Stack bundle in your cart. Only one bundle is allowed per transaction.');
+            return;
+          }
+        } catch (err) {
+          console.error('Failed to verify cart state', err);
+        }
+
+        const stackId = 'stack_' + Date.now() + Math.random().toString(36).substring(2, 7);
+
+        const itemsToAdd = [
+          { id: gearInput ? gearInput.value : null, quantity: 1, properties: { _stack_id: stackId, _stack_role: 'gear', _bundle: 'Forge Stack' } },
+          { id: mealInput ? mealInput.value : null, quantity: 1, properties: { _stack_id: stackId, _stack_role: 'meal', _bundle: 'Forge Stack' } },
+          { id: suppInput ? suppInput.value : null, quantity: 1, properties: { _stack_id: stackId, _stack_role: 'supp', _bundle: 'Forge Stack' } }
+        ].filter(item => item.id && item.id !== '');
+
+        if (itemsToAdd.length === 0) {
+          alert('Please select at least one item for your stack.');
+          return;
+        }
+
+        addCartBtn.disabled = true;
+        addCartBtn.textContent = "BUILDING STACK...";
+
+        try {
+          // Sequentially add each item to prevent Shopify AJAX race conditions
+          for (const item of itemsToAdd) {
+            const response = await fetch('/cart/add.js', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(item)
+            });
+
+            if (!response.ok) {
+              const errData = await response.json();
+              throw new Error(errData.description || errData.message || 'Failed to add item');
+            }
+          }
+
+          window.location.href = '/cart';
+        } catch (err) {
+          console.error('Failed to add bundle to cart', err);
+          alert('Error adding stack to cart: ' + err.message);
+          addCartBtn.disabled = false;
+          addCartBtn.textContent = "ADD ENTIRE FORGE STACK TO CART";
+        }
+      });
+    }
+
+    function updateStepView() {
+      steps.forEach(step => {
+        if (parseInt(step.getAttribute('data-step')) === currentStep) {
+          step.style.display = 'block';
+        } else {
+          step.style.display = 'none';
+        }
+      });
+      
+      const progressPct = (currentStep / totalSteps) * 100;
+      if (progressBar) {
+        progressBar.style.width = progressPct + '%';
+      }
+      
+      if (prevBtn) {
+        prevBtn.disabled = currentStep === 1;
+      }
+      
+      if (nextBtn) {
+        if (currentStep === totalSteps) {
+          nextBtn.style.display = 'none';
+        } else {
+          nextBtn.style.display = 'block';
+          nextBtn.textContent = 'Next Step';
+        }
+      }
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function() {
+        if (currentStep < totalSteps) {
+          currentStep++;
+          updateStepView();
+        }
+      });
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', function() {
+        if (currentStep > 1) {
+          currentStep--;
+          updateStepView();
+        }
+      });
+    }
+
+    updateStepView();
+    calculateTargetMetrics();
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Forge Stack Builder",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Forge Stack Builder"
+    }
+  ]
+}
+{% endschema %}

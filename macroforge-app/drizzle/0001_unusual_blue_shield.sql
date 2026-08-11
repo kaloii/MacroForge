@@ -1,0 +1,4 @@
+ALTER TABLE `batch_losses` MODIFY COLUMN `product_profile_id` bigint unsigned NOT NULL;--> statement-breakpoint
+ALTER TABLE `product_batches` MODIFY COLUMN `product_profile_id` bigint unsigned NOT NULL;--> statement-breakpoint
+ALTER TABLE `batch_losses` ADD CONSTRAINT `batch_losses_product_profile_id_product_meta_profiles_id_fk` FOREIGN KEY (`product_profile_id`) REFERENCES `product_meta_profiles`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `product_batches` ADD CONSTRAINT `product_batches_product_profile_id_product_meta_profiles_id_fk` FOREIGN KEY (`product_profile_id`) REFERENCES `product_meta_profiles`(`id`) ON DELETE cascade ON UPDATE no action;

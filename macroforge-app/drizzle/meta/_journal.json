@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1786386494887,
+      "tag": "0000_thick_hellfire_club",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1786386638683,
+      "tag": "0001_unusual_blue_shield",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786447938537,
+      "tag": "0002_clever_slapstick",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1786465538998,
+      "tag": "0003_boring_captain_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1786468615427,
+      "tag": "0004_small_colossus",
+      "breakpoints": true
+    }
+  ]
+}

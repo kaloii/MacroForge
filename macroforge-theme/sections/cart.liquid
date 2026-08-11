@@ -1,0 +1,312 @@
+<div class="mf-cart-page">
+  <div class="mf-cart-container">
+    <h1 class="mf-cart-title">Your Cart</h1>
+
+    {% if cart.item_count > 0 %}
+      <form action="{{ routes.cart_url }}" method="post" class="mf-cart-form">
+        <div class="mf-cart-items">
+          {% for item in cart.items %}
+            <div class="mf-cart-item">
+              <div class="mf-cart-item-image">
+                {% if item.image != blank %}
+                  <img src="{{ item.image | image_url: width: 200 }}" alt="{{ item.title | escape }}" width="100" height="100">
+                {% endif %}
+              </div>
+              
+              <div class="mf-cart-item-details" data-unit-price="{{ item.final_price }}">
+                <a href="{{ item.url }}" class="mf-item-title">{{ item.product.title }}</a>
+                {% if item.properties._stack_role != blank %}
+                  <span class="forge-stack-badge">⚡ Forge Stack: {{ item.properties._stack_role | capitalize }}</span>
+                {% endif %}
+                <p class="mf-item-price">{{ item.final_price | money }}</p>
+              </div>
+
+              <div class="mf-cart-item-qty">
+                {% if item.properties._stack_role != blank %}
+                  <span class="mf-locked-qty">1</span>
+                  <input type="hidden" name="updates[]" value="1">
+                {% else %}
+                  <input 
+                    type="number" 
+                    name="updates[]" 
+                    value="{{ item.quantity }}" 
+                    min="1" 
+                    max="{% if item.variant.inventory_management != blank %}{{ item.variant.inventory_quantity }}{% else %}9999{% endif %}" 
+                    class="mf-qty-input" 
+                    data-price="{{ item.final_price }}">
+                {% endif %}
+              </div>
+
+              <div class="mf-cart-item-total">
+                <p class="mf-line-price-display">{{ item.final_line_price | money }}</p>
+                <a href="{{ item.url_to_remove }}" class="mf-remove-link">Remove</a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="mf-cart-footer">
+          <div class="mf-subtotal">
+            <span>Subtotal:</span>
+            <span class="mf-subtotal-price">{{ cart.total_price | money }}</span>
+          </div>
+          <p class="mf-tax-note">Taxes and shipping calculated at checkout.</p>
+          <div class="mf-cart-actions">
+            <button type="button" id="mf-clear-cart-btn" class="mf-btn-secondary" style="background-color: transparent; border: 1px solid #847996; color: #847996; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease;">
+  Clear Entire Cart
+</button>
+            <button type="submit" name="update" class="mf-update-btn">Update Cart</button>
+            <button type="submit" name="checkout" class="mf-checkout-btn">Proceed to Checkout</button>
+          </div>
+        </div>
+      </form>
+    {% else %}
+      <div class="mf-cart-empty">
+        <p>Your cart is currently empty.</p>
+        <a href="{{ routes.all_products_collection_url }}" class="mf-continue-btn">Explore Products</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const subtotalEl = document.querySelector('.mf-subtotal-price');
+    const clearCartBtn = document.getElementById('mf-clear-cart-btn');
+    if (clearCartBtn) {
+    clearCartBtn.addEventListener('click', async function() {
+      // Optional: Add a confirmation prompt to prevent accidental clears
+      if (!confirm('Are you sure you want to clear your entire cart?')) {
+        return;
+      }
+
+      clearCartBtn.disabled = true;
+      clearCartBtn.textContent = 'Clearing...';
+
+      try {
+        const response = await fetch('/cart/clear.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          // Refresh the page or trigger a cart drawer update event
+          window.location.reload();
+        } else {
+          console.error('Failed to clear cart');
+          clearCartBtn.disabled = false;
+          clearCartBtn.textContent = 'Clear Entire Cart';
+        }
+      } catch (err) {
+        console.error('Error clearing cart:', err);
+        clearCartBtn.disabled = false;
+        clearCartBtn.textContent = 'Clear Entire Cart';
+      }
+    });
+  }
+  
+
+    function formatMoney(cents) {
+      return '$' + (cents / 100).toFixed(2);
+    }
+
+    function recalculateTotals() {
+      let calculatedSubtotal = 0;
+
+      document.querySelectorAll('.mf-cart-item').forEach(row => {
+        const qtyInput = row.querySelector('.mf-qty-input');
+        const linePriceDisplay = row.querySelector('.mf-line-price-display');
+        
+        if (qtyInput) {
+          const price = parseFloat(qtyInput.dataset.price) || 0;
+          let qty = parseInt(qtyInput.value) || 0;
+          const max = parseInt(qtyInput.max) || 9999;
+
+          if (qty > max) {
+            qty = max;
+            qtyInput.value = max;
+          }
+          if (qty < 0) {
+            qty = 0;
+            qtyInput.value = 0;
+          }
+
+          const lineTotal = price * qty;
+          if (linePriceDisplay) {
+            linePriceDisplay.textContent = formatMoney(lineTotal);
+          }
+          calculatedSubtotal += lineTotal;
+        } else {
+          const detailsEl = row.querySelector('.mf-cart-item-details');
+          const unitPrice = parseFloat(detailsEl.dataset.unitPrice) || 0;
+          if (linePriceDisplay) {
+            linePriceDisplay.textContent = formatMoney(unitPrice);
+          }
+          calculatedSubtotal += unitPrice;
+        }
+      });
+
+      if (subtotalEl) {
+        subtotalEl.textContent = formatMoney(calculatedSubtotal);
+      }
+    }
+
+    function bindInputListeners() {
+      const qtyInputs = document.querySelectorAll('.mf-qty-input');
+      qtyInputs.forEach(input => {
+        input.removeEventListener('input', recalculateTotals);
+        input.removeEventListener('change', recalculateTotals);
+        input.addEventListener('input', recalculateTotals);
+        input.addEventListener('change', recalculateTotals);
+      });
+    }
+
+    // Initial run for standard inputs
+    bindInputListeners();
+    recalculateTotals();
+
+    // Perform stack integrity checks and instant DOM correction
+    try {
+      const response = await fetch('/cart.js');
+      const cart = await response.json();
+
+      const stacks = {};
+      cart.items.forEach((item, index) => {
+        const stackId = item.properties?._stack_id;
+        const role = item.properties?._stack_role;
+
+        if (stackId && role) {
+          if (!stacks[stackId]) {
+            stacks[stackId] = [];
+          }
+          stacks[stackId].push({ 
+            key: item.key, 
+            role, 
+            quantity: item.quantity, 
+            index: index,
+            price: item.final_price
+          });
+        }
+      });
+
+      let hasOrphans = false;
+
+      for (const stackId in stacks) {
+        const stackItems = stacks[stackId];
+        const hasGear = stackItems.some(item => item.role === 'gear');
+        const hasMeal = stackItems.some(item => item.role === 'meal');
+        const hasSupp = stackItems.some(item => item.role === 'supp');
+
+        if (!hasGear || !hasMeal || !hasSupp) {
+          hasOrphans = true;
+          const cartRows = document.querySelectorAll('.mf-cart-item');
+          
+          for (const item of stackItems) {
+            const row = cartRows[item.index];
+            if (row) {
+              // 1. Strip the badge immediately
+              const badge = row.querySelector('.forge-stack-badge');
+              if (badge) badge.remove();
+
+              // 2. Unlock quantity box into a standard input field
+              const qtyContainer = row.querySelector('.mf-cart-item-qty');
+              if (qtyContainer) {
+                qtyContainer.innerHTML = `
+                  <input 
+                    type="number" 
+                    name="updates[]" 
+                    value="${item.quantity}" 
+                    min="1" 
+                    max="9999" 
+                    class="mf-qty-input" 
+                    data-price="${item.price}">
+                `;
+              }
+            }
+
+            // 3. Dispatch silent backend property wipe
+            fetch('/cart/change.js', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                id: item.key,
+                quantity: item.quantity,
+                properties: {
+                  _stack_id: "",
+                  _stack_role: ""
+                }
+              })
+            }).catch(err => console.error('Background property cleanup failed', err));
+          }
+        }
+      }
+
+      if (hasOrphans) {
+        bindInputListeners();
+        recalculateTotals();
+      }
+
+    } catch (err) {
+      console.error('Failed to process stack integrity check:', err);
+    }
+  });
+</script>
+
+{% stylesheet %}
+  .mf-cart-page { background: #310A31; min-height: 80vh; padding: 60px 20px; color: #FDF0D5; }
+  .mf-cart-container { max-width: 900px; margin: 0 auto; }
+  .mf-cart-title { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; text-align: center; }
+  .mf-cart-item { display: grid; grid-template-columns: 80px 1fr 100px 100px; gap: 20px; align-items: center; padding: 20px 0; border-bottom: 1px solid #847996; }
+  .mf-cart-item-image img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 6px; }
+  .mf-item-title { color: #FDF0D5; text-decoration: none; font-weight: 700; display: block; margin-bottom: 4px; }
+  .mf-item-title:hover { color: #F15BB5; }
+  .mf-item-price { color: #847996; margin: 0; font-size: 0.95rem; }
+  .mf-cart-item-total { text-align: right; }
+  .mf-cart-item-total p { color: #F15BB5; font-weight: 800; margin: 0 0 6px; }
+  .mf-remove-link { color: #847996; font-size: 0.8rem; text-decoration: underline; }
+  .mf-cart-footer { margin-top: 40px; text-align: right; border-top: 2px solid #847996; padding-top: 20px; }
+  .mf-subtotal { font-size: 1.5rem; font-weight: 900; }
+  .mf-subtotal-price { color: #F15BB5; margin-left: 12px; }
+  .mf-tax-note { color: #847996; font-size: 0.85rem; margin: 8px 0 24px; }
+  .mf-cart-actions { display: flex; justify-content: flex-end; gap: 16px; }
+  .mf-update-btn { background: transparent; border: 2px solid #847996; color: #FDF0D5; padding: 14px 24px; border-radius: 6px; font-weight: 700; cursor: pointer; display: none;}
+  .mf-checkout-btn { background: #F15BB5; border: none; color: #310A31; padding: 14px 32px; border-radius: 6px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 0 15px rgba(241, 91, 181, 0.4); }
+  .mf-cart-empty { text-align: center; padding: 60px 0; color: #847996; }
+  .mf-continue-btn { display: inline-block; margin-top: 20px; background: #F15BB5; color: #310A31; padding: 12px 24px; border-radius: 6px; font-weight: 800; text-decoration: none; }
+  
+  .forge-stack-badge {
+    background-color: #8d115bff;
+    color: #FDF0D5;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .mf-locked-qty {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #FDF0D5;
+    padding: 4px 12px;
+    background: rgba(132, 121, 150, 0.2);
+    border-radius: 4px;
+    display: inline-block;
+    text-align: center;
+  }
+
+  @media (max-width: 600px) {
+    .mf-cart-item { grid-template-columns: 60px 1fr; gap: 12px; }
+    .mf-cart-item-qty, .mf-cart-item-total { grid-column: span 2; text-align: left; }
+    .mf-cart-actions { flex-direction: column; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{ "name": "Main Cart" }
+{% endschema %}

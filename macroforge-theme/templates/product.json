@@ -1,0 +1,36 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "1786369077b6709421": {
+      "type": "apps",
+      "blocks": {
+        "macroforge_app_diet_selector_XQVjBF": {
+          "type": "shopify://apps/macroforge-app/blocks/diet_selector/019fed02-6d5c-78f6-b97f-36d93d0f6679",
+          "settings": {
+            "widget_title": "Choose Your Dietary Goal"
+          }
+        }
+      },
+      "block_order": [
+        "macroforge_app_diet_selector_XQVjBF"
+      ],
+      "settings": {}
+    },
+    "main": {
+      "type": "product",
+      "settings": {}
+    }
+  },
+  "order": [
+    "1786369077b6709421",
+    "main"
+  ]
+}
