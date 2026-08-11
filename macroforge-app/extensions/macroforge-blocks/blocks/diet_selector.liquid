@@ -21,12 +21,15 @@
       const selectElement = document.getElementById("diet-select-{{ block.id }}");
       const resultsContainer = document.getElementById("macroforge-results-{{ block.id }}");
       const shopDomain = "{{ shop.permanent_domain }}";
-      const appUrl = "https://macroforge-9jyq.onrender.com; 
 
       const fetchRecommendations = async (diet) => {
         resultsContainer.innerHTML = `<p class="mf-subtext">Finding best matches...</p>`;
         try {
-          const response = await fetch(`${appUrl}/api/recommendations?shop=${shopDomain}&diet=${diet}`);
+          const response = await fetch(`/apps/macroforge/api/recommendations?shop=${shopDomain}&diet=${diet}`);
+      
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
           const data = await response.json();
           
           if (data.success && data.products.length > 0) {

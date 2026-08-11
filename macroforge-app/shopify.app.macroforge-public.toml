@@ -27,6 +27,10 @@ scopes = "read_orders,write_discounts,write_metaobject_definitions,write_metaobj
 [auth]
 redirect_urls = [ "https://example.com/api/auth" ]
 
+[app_proxy]
+url = "https://macroforge-9jyq.onrender.com"
+subpath = "macroforge"
+prefix = "apps"
 
 [build]
 automatically_update_urls_on_dev = true
