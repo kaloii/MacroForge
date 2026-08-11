@@ -25,7 +25,7 @@ api_version = "2026-10"
 scopes = "read_orders,write_discounts,write_metaobject_definitions,write_metaobjects,write_products"
 
 [auth]
-redirect_url_allowlist = [
+redirect_urls = [
   "https://macroforge-9jyq.onrender.com/auth/callback",
   "https://macroforge-9jyq.onrender.com/auth/exit-iframe"
 ]
