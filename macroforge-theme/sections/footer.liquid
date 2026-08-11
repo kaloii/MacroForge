@@ -1,57 +1,150 @@
-<footer>
-  <div class="footer__copyright">
-    &copy;
-    {{ 'now' | date: '%Y' }}
-    {{ shop.name | link_to: routes.root_url }}, {{ powered_by_link }}
-  </div>
-
-  <div class="footer__links">
-    {% for link in section.settings.menu.links %}
-      {{ link.title | link_to: link.url }}
-    {% endfor %}
-  </div>
-
-  <div class="footer__payment">
-    {% if section.settings.show_payment_icons %}
-      {% for type in shop.enabled_payment_types %}
-        {{ type | payment_type_svg_tag }}
-      {% endfor %}
-    {% endif %}
+<footer class="mf-footer">
+  <div class="mf-footer-container">
+    <div class="mf-footer-grid">
+      <div class="mf-footer-col">
+        <h3 class="mf-footer-heading">MacroForge</h3>
+        <p class="mf-footer-text">Forging your peak physical performance with elite gym gear, precision meal prep, and clean supplementation.</p>
+      </div>
+      <div class="mf-footer-col">
+        <h4 class="mf-footer-subheading">Quick Links</h4>
+        <ul class="mf-footer-links">
+          <li><a href="{{routes.all_products_collection_url}}">Explore Products</a></li>
+          <li><a href="{{ routes.cart_url }}">View Cart</a></li>
+          <li><a href="/pages/about">About Us</a></li>
+          <li><a href="/pages/contact">Contact Support</a></li>
+        </ul>
+      </div>
+      <div class="mf-footer-col">
+        <h4 class="mf-footer-subheading">Stay Fueled</h4>
+        <p class="mf-footer-text">Subscribe to get exclusive drops, stack recommendations, and training protocols.</p>
+        <form action="/contact#contact_form" method="post" class="mf-footer-form">
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <input type="email" name="contact[email]" placeholder="Enter your email" required class="mf-footer-input">
+          <button type="submit" class="mf-footer-btn">Subscribe</button>
+        </form>
+      </div>
+    </div>
+    <div class="mf-footer-bottom">
+      <p>&copy; {{ 'now' | date: '%Y' }} MacroForge. All rights reserved.</p>
+    </div>
   </div>
 </footer>
 
 {% stylesheet %}
-  footer {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
+  .mf-footer {
+    background-color: #000000;
+    color: #FDF0D5;
+    padding: 60px 20px 30px;
+    border-top: 1px solid #847996;
   }
-  footer a {
+  
+  .mf-footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .mf-footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    margin-bottom: 40px;
+  }
+  
+  .mf-footer-heading {
+    font-size: 1.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #FDF0D5;
+    margin-bottom: 16px;
+  }
+  
+  .mf-footer-subheading {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #FDF0D5;
+    margin-bottom: 16px;
+  }
+  
+  .mf-footer-text {
+    color: #847996;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  
+  .mf-footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .mf-footer-links li {
+    margin-bottom: 10px;
+  }
+  
+  .mf-footer-links a {
+    color: #847996;
     text-decoration: none;
-    color: var(--color-foreground);
+    transition: color 0.2s ease;
   }
-  footer .footer__links,
-  footer .footer__payment {
+  
+  .mf-footer-links a:hover {
+    color: #F15BB5;
+  }
+  
+  .mf-footer-form {
     display: flex;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .mf-footer-input {
+    background-color: #310A31;
+    border: 1px solid #847996;
+    color: #FDF0D5;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+  }
+  
+  .mf-footer-input:focus {
+    border-color: #F15BB5;
+  }
+  
+  .mf-footer-btn {
+    background-color: #F15BB5;
+    color: #310A31;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: opacity 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .mf-footer-btn:hover {
+    opacity: 0.9;
+    box-shadow: 0 0 12px rgba(241, 91, 181, 0.6);
+  }
+  
+  .mf-footer-bottom {
+    border-top: 1px solid rgba(132, 121, 150, 0.3);
+    padding-top: 20px;
+    text-align: center;
+    color: #847996;
+    font-size: 0.85rem;
   }
 {% endstylesheet %}
 
 {% schema %}
 {
-  "name": "t:general.footer",
-  "settings": [
-    {
-      "type": "link_list",
-      "id": "menu",
-      "label": "t:labels.menu"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_payment_icons",
-      "label": "t:labels.show_payment_icons",
-      "default": true
-    }
-  ]
+  "name": "MacroForge Footer",
+  "settings": []
 }
 {% endschema %}
