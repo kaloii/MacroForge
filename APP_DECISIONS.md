@@ -9,7 +9,7 @@ The signature feature of the storefront is the Forge Stack Builder, an interacti
 
 **Interactive Bundle Building**: Users select and mix items dynamically on a unified interface, seeing their aggregated macros (protein, carbs, fats, and total calories) update instantly.
 
-**Dynamic Discount Calculation**: To incentivize larger volume purchases and help customers build complete nutritional stacks, the system calculates a tiered dynamic discount based on the total item count or bundle value. For instance, adding 3 items triggers a base bundle discount percentage, while scaling up to 5 or more items increases the discount tier automatically in real-time, encouraging higher Average Order Value (AOV) while delivering perceived value to the buyer. The discount is powered by an app extension that intercepts bundle creations and dynamically applies discounts to the products included in said bundles.
+**Dynamic Discount Calculation**: To incentivize larger volume purchases and help customers build complete nutritional stacks, the system calculates a tiered dynamic discount based on the total bundle value. For instance, exceeding $150 on a single bundle will activate higher tier discounts of up to 20%, encouraging higher Average Order Value (AOV) while delivering perceived value to the buyer. The discount is powered by an app extension that intercepts bundle creations and dynamically applies discounts to the products included in said bundles.
 
 ## 2. App Idea & Core Systems
 
